@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.DatatypeConverter;
 
+// bestimmt nicht einfach kopiert
 public class Decryption{
     public static void main(String [] args) throws Exception {
         decrypt("fbd071c75ea09e05595770fa70a7d6d2faaf5002304e9f532e57e3c0ee8eb38c");

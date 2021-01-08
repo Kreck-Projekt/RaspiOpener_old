@@ -36,6 +36,7 @@ class TCPServer {
                 fromclient = inFromClient.readLine();
                 String dcrMsg = Decryption.decrypt(fromclient);
                 String param = dcrMsg.substring(2);
+                int posPas;
                 switch(dcrMsg.charAt(0)){
                     case 'n':
                         break;
@@ -43,11 +44,18 @@ class TCPServer {
                         break;
                     case 'p':
                         break;
-                    case 'a':
+                    case 'a': // a für "password acton" aka halts maul justin und formulier gescheit was du sagen willst
                         System.out.println("PaSsWoRd AcTiOn");
                         System.out.println("Junge sag doch einfach, dass das als öffnen gemeint war");
                         break;
-                    case '0':
+                    case '0': // O für open
+                        System.out.println("Türe wird geöffnet...");
+                        for(int i = 0; i<param.length(); i++){
+                            if(param.charAt(i) == ';'){
+                                posPas = i;
+                                break;
+                            }
+                        }
                         GpioController.activate(Integer.valueOf(param));
                         break;
                     default:
