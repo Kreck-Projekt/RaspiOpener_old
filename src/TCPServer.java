@@ -44,6 +44,8 @@ class TCPServer {
                     case 'p':
                         break;
                     case 'a':
+                        System.out.println("PaSsWoRd AcTiOn");
+                        System.out.println("Junge sag doch einfach, dass das als öffnen gemeint war");
                         break;
                     case '0':
                         GpioController.activate(Integer.valueOf(param));

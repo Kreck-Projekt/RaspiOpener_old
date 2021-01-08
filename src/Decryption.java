@@ -132,7 +132,7 @@ class EncryptorAesGcm {
     public static void main(String[] args) throws Exception {
 
         String OUTPUT_FORMAT = "%-30s:%s";
-        System.out.println("penis");
+        System.out.println("Vorlage");
         String hexKey = "fbd071c75ea09e05595770fa70a7d6d2faaf5002304e9f532e57e3c0ee8eb38c";
         byte [] encodedKey = DatatypeConverter.parseHexBinary(hexKey);
         SecretKey secretKey = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
