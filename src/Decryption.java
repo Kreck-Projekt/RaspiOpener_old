@@ -19,17 +19,17 @@ import javax.xml.bind.DatatypeConverter;
 // bestimmt nicht einfach kopiert
 public class Decryption{
     public static void main(String [] args) throws Exception {
-        decrypt("fbd071c75ea09e05595770fa70a7d6d2faaf5002304e9f532e57e3c0ee8eb38c");
+        //decrypt("fbd071c75ea09e05595770fa70a7d6d2faaf5002304e9f532e57e3c0ee8eb38c");
     }
-    public static String decrypt(String msg) throws Exception {
-        String hexKey = msg;
+    public static String decrypt(String key, String nonce, String msg) throws Exception {
+        String hexKey = key;
         byte [] encodedKey = DatatypeConverter.parseHexBinary(hexKey);
         SecretKey secretKey = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
 
-        String hexNonce = "1e2e0b467ac613a9909f61c1";
+        String hexNonce = nonce;
         byte [] byteNonce = DatatypeConverter.parseHexBinary(hexNonce);
 
-        String hexMsgEncrypted = "4d5a57c461d97df83bebdc98237e64d19f41a70637e53fed48b8a7f87ff3bdc6f0e7e3ffdb1a809ac38c75ccdac32e11";
+        String hexMsgEncrypted = msg;
         byte [] encryptedText = DatatypeConverter.parseHexBinary(hexMsgEncrypted);
 
         String decryptedText = EncryptorAesGcm.decrypt(encryptedText, secretKey, byteNonce);
