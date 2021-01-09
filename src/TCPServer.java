@@ -29,7 +29,6 @@ class TCPServer {
                     new InputStreamReader(connected.getInputStream()));
 
             PrintWriter outToClient = new PrintWriter(connected.getOutputStream(), true);
-            System.out.println("shababs botten, grüne augen braune locken");
             // shababs botten, grüne augen braune locken
             outToClient.println("Connected");
             // System.out.println("Ey (K-K-Kingsake) Ey, Pasha, ey, ja, ey (YungGlizzy) Shababs botten, grüne Augen, braune Locken Tn's rocken, halbe Kiste, wenn wir shoppen Shababs botten, grüne Augen, braune Locken Tn's rocken, halbe Kiste, wenn wir shoppen Prada Çanta voller Haze Komplett Kafa, outta Race Braune Locken, grüne Augen Shababs sind am Botten, no face, no case, ey Halbe Kiste im Toyota gebunkert Einundsechzig, keiner sober, nur Kundschaft Neue Ringe, neue Eyes Einundsechzig, gerade heiß Shawty, sag' mir, wie du heißt Hab' vergessen, tut mir leid An Sarrazin will ich verdienen, bin in Berlin Sein Sohn holt jede Woche Tilidin Mehringdamm, Saka-Wasser oder Lean Müsteris schreiben mir: „Komm' vorbei“ Und alle paar Monate flieg' ich Türkei Ich ess' einen Adana oder auch zwei Abi hat Katana an seinem Bein und Shababs botten, grüne Augen, braune Locken Tn's rocken, halbe Kiste, wenn wir shoppen Shababs botten, grüne Augen, braune Locken Tn's rocken, halbe Kiste, wenn wir shoppen Shababs botten, grüne Augen, braune Locken Tn's rocken, halbe Kiste, wenn wir shoppen Shababs botten, grüne Augen, braune Locken Tn's rocken, halbe Kiste, wenn wir shoppen Ey (K-K-Kingsake) Ey, Pasha, ey, ja, ey (YungGlizzy) Shababs botten, grüne Augen, braune Locken Tn's rocken, halbe Kiste, wenn wir shoppen Shababs botten, grüne Augen, braune Locken Tn's rocken, halbe Kiste, wenn wir shoppen Prada Çanta voller Haze Kafa, outta Race Braune Locken, grüne Augen Shababs sind am Botten, no face, no case, ey Halbe Kiste im Toyota gebunkert Einundsechzig, keiner sober, nur Kundschaft Neue Ringe, neue Eyes Einundsechzig, gerade heiß Shawty, sag' mir, wie du heißt Hab' vergessen, tut mir leid An Sarrazin will ich verdienen, bin in Berlin Sein Sohn holt jede Woche Tilidin Mehringdamm, Saka-Wasser oder Lean Müsteris schreiben mir: „Komm' vorbei“ Und alle paar Monate flieg' ich Türkei Ich ess' einen Adana oder auch zwei Abi hat Katana an seinem Bein und Shababs botten, grüne Augen, braune Locken Tn's rocken, halbe Kiste, wenn wir shoppen Shababs botten, grüne Augen, braune Locken Tn's rocken, halbe Kiste, wenn wir shoppen Shababs botten, grüne Augen, braune Locken Tn's rocken, halbe Kiste, wenn wir shoppen Shababs botten, grüne Augen, braune Locken Tn's rocken, halbe Kiste, wenn wir shoppen\n")
@@ -42,7 +41,6 @@ class TCPServer {
                 System.out.println("RECIEVED: " + fromclient);
                 String param = fromclient.substring(2);
                 System.out.println(fromclient);
-                System.out.println("punkt2");
                 int posPas = -1;
                 switch (fromclient.charAt(0)) {
                     case 'n':
@@ -63,25 +61,24 @@ class TCPServer {
                         System.out.println("Junge sag doch einfach, dass das als öffnen gemeint war");
                         break;
                     case 'o': // O für open
+                        String dcrMsg = Decryption.decrypt(key, nonce, param);
 
-                        System.out.println("Türe wird geöffnet...");
-                        for (int i = 0; i < param.length(); i++) {
-                            if (param.charAt(i) == ';') {
+                        for (int i = 0; i < dcrMsg.length(); i++) {
+                            if (dcrMsg.charAt(i) == ';') {
                                 posPas = i;
                                 break;
                             }
                         }
 
-                        System.out.println("Hash: " + param.substring(0, posPas - 2));
-                        System.out.println("Param: " + param.substring(posPas));
-                        if (hashCheck(param.substring(0, posPas - 2))) {
-
-                            GpioController.activate(Integer.valueOf(param.substring(posPas)));
+                        System.out.println("Hash: " + dcrMsg.substring(0, posPas - 2));
+                        System.out.println("Param: " + dcrMsg.substring(posPas+1));
+                        if (hashCheck(dcrMsg.substring(0, posPas - 2))) {
+                            System.out.println("Türe wird geöffnet...");
+                            GpioController.activate(Integer.valueOf(dcrMsg.substring(posPas+1)));
                         }
                         else System.out.println("ding dong, your password is wrong");
                             break;
                     case 'H':
-                        System.out.println("roflcopter");
                         outToClient.println("I'm fine, thanks");
                         break;
                     default:
