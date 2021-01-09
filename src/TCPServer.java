@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 class TCPServer {
     static String key;
@@ -8,6 +9,10 @@ class TCPServer {
     static String oriHash = "penis";  //original hash, just saved here for testing purposes
     static String tHash; //transmitted hash
     public static void main(String args[]) throws Exception {
+        File myObj = new File("storage.txt");
+        Scanner sc = new Scanner(myObj);
+        key = sc.nextLine();
+        oriHash = sc.nextLine();
         String fromclient;
 
         ServerSocket Server = new ServerSocket(5000);
@@ -33,34 +38,56 @@ class TCPServer {
             // this loop is probably useless, since it will break after every time it happens, but i reused old server code
             // that i've written a while back and just changed it because i'm lazy?
             while (true) {
-                // receive from app
 
+                // receive from app
                 fromclient = inFromClient.readLine();
                 System.out.println("RECIEVED: " + fromclient);
                 String param = fromclient.substring(2);
+                boolean first /*the first found semicolon*/ = false;
+                for(int i = 0; i<param.length(); i++){
+                    if(!first && param.charAt(i) == ';') first = true;
+                    else if(first && param.charAt(i) == ';') nonce = param.substring(i+1);
+                }
                 System.out.println(fromclient);
                 int posPas = -1;
                 switch (fromclient.charAt(0)) {
                     case 'n':
-                        nonce = param;
-                        System.out.println(nonce + " gespeichert");
+                        System.out.println("Nonce angekommen, du keks");
                         break;
                     case 'k':
                         key = param;
-                        Printer.printToFile(key + ";", new PrintWriter(new BufferedWriter(new FileWriter("storage.txt"))));
+                        Printer.printToFile(key, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt"))));
                         System.out.println(key + " gespeichert");
                         break;
                     case 'p':
-                        String s = Decryption.decrypt(key, nonce, param);
-                        oriHash = s;
-                        Printer.printToFile(oriHash, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt", true))));
-                        System.out.println(s);
-                        break;
-                    case 'a': // a für "password acton" aka halts maul justin und formulier gescheit was du sagen willst
+                        if(oriHash == null) {
+                            for (int i = 0; i < param.length(); i++) {
+                                if (param.charAt(i) == ';') {
+                                    nonce = param.substring(i + 1);
+                                    param = param.substring(0, i);
+                                }
+                            }
+                            String s = Decryption.decrypt(key, nonce, param);
+                            oriHash = s;
+                            Printer.printToFile(oriHash, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt", true))));
+                            System.out.println(s);
+                            break;
+                        }
+                        else{
+
+                        }
+                    case 'a': // a für "password action" aka halts maul justin und formulier gescheit was du sagen willst
                         System.out.println("PaSsWoRd AcTiOn");
                         System.out.println("Junge sag doch einfach, dass das als öffnen gemeint war");
                         break;
                     case 'o': // O für open
+                        for(int i = 0; i<param.length(); i++){
+                            if(!first && param.charAt(i) == ';') first = true;
+                            else if(first && param.charAt(i) == ';') {
+                                nonce = param.substring(i + 1);
+                                param = param.substring(0, i);
+                            }
+                        }
                         String dcrMsg = Decryption.decrypt(key, nonce, param);
 
                         for (int i = 0; i < dcrMsg.length(); i++) {
@@ -70,13 +97,13 @@ class TCPServer {
                             }
                         }
 
-                        System.out.println("Hash: " + dcrMsg.substring(0, posPas - 2));
+                        System.out.println("Hash: " + dcrMsg.substring(0, posPas));
                         System.out.println("Param: " + dcrMsg.substring(posPas+1));
-                        if (hashCheck(dcrMsg.substring(0, posPas - 2))) {
+                        if (hashCheck(dcrMsg.substring(0, posPas))) {
                             System.out.println("Türe wird geöffnet...");
                             GpioController.activate(Integer.valueOf(dcrMsg.substring(posPas+1)));
                         }
-                        else System.out.println("ding dong, your password is wrong");
+                        else System.out.println("ding dong, your password is wrong\n̿̿ ̿̿ ̿̿ ̿'̿'\\̵͇̿̿\\з= ( ▀ ͜͞ʖ▀) =ε/̵͇̿̿/’̿’̿ ̿ ̿̿ ̿̿ ̿̿");
                             break;
                     case 'H':
                         outToClient.println("I'm fine, thanks");
@@ -99,7 +126,7 @@ class TCPServer {
         }
 
 
-    private static boolean hashCheck (String hash){
+    private static boolean hashCheck (String tHash){
         if(tHash.equals(/*hash aus speicher?*/oriHash)) return true;
         else return false;
     }
