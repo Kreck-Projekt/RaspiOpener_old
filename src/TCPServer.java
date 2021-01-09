@@ -1,6 +1,4 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -49,11 +47,13 @@ class TCPServer {
                         break;
                     case 'k':
                         key = param;
+                        Printer.printToFile(key + ";", new PrintWriter(new BufferedWriter(new FileWriter("storage.txt"))));
                         System.out.println(key + " gespeichert");
                         break;
                     case 'p':
                         String s = Decryption.decrypt(key, nonce, param);
                         oriHash = s;
+                        Printer.printToFile(oriHash, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt"),true)));
                         System.out.println(s);
                         break;
                     case 'a': // a für "password acton" aka halts maul justin und formulier gescheit was du sagen willst

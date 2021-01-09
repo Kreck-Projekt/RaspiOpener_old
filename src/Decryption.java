@@ -40,25 +40,11 @@ public class Decryption{
 }
 
 class CryptoUtils {
-    // AES secret key
-    public static SecretKey getAESKey(int keysize) throws NoSuchAlgorithmException {
-        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-        keyGen.init(keysize, SecureRandom.getInstanceStrong());
-        return keyGen.generateKey();
-    }
 
-    // Password derived AES 256 bits secret key
-    public static SecretKey getAESKeyFromPassword(char[] password, byte[] salt)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
 
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        // iterationCount = 65536
-        // keyLength = 256
-        KeySpec spec = new PBEKeySpec(password, salt, 65536, 256);
-        SecretKey secret = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
-        return secret;
 
-    }
+
+
 
     // hex representation
     public static String hex(byte[] bytes) {
@@ -96,15 +82,7 @@ class EncryptorAesGcm {
 
     private static final Charset UTF_8 = StandardCharsets.UTF_8;
 
-    // AES-GCM needs GCMParameterSpec
-    public static byte[] encrypt(byte[] pText, SecretKey secret, byte[] iv) throws Exception {
 
-        Cipher cipher = Cipher.getInstance(ENCRYPT_ALGO);
-        cipher.init(Cipher.ENCRYPT_MODE, secret, new GCMParameterSpec(TAG_LENGTH_BIT, iv));
-        byte[] encryptedText = cipher.doFinal(pText);
-        return encryptedText;
-
-    }
 
     public static String decrypt(byte[] cText, SecretKey secret, byte[] iv) throws Exception {
 
@@ -115,45 +93,4 @@ class EncryptorAesGcm {
 
     }
 
-    public static byte[] int2byte(int[]src) {
-        int srcLength = src.length;
-        byte[]dst = new byte[srcLength << 2];
-
-        for (int i=0; i<srcLength; i++) {
-            int x = src[i];
-            int j = i << 2;
-            dst[j++] = (byte) ((x >>> 0) & 0xff);
-            dst[j++] = (byte) ((x >>> 8) & 0xff);
-            dst[j++] = (byte) ((x >>> 16) & 0xff);
-            dst[j++] = (byte) ((x >>> 24) & 0xff);
-        }
-        return dst;
-    }
-
-    public static void main(String[] args) throws Exception {
-
-        String OUTPUT_FORMAT = "%-30s:%s";
-        System.out.println("Vorlage");
-        String hexKey = "fbd071c75ea09e05595770fa70a7d6d2faaf5002304e9f532e57e3c0ee8eb38c";
-        byte [] encodedKey = DatatypeConverter.parseHexBinary(hexKey);
-        SecretKey secretKey = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
-
-        String hexNonce = "1e2e0b467ac613a9909f61c1";
-        byte [] byteNonce = DatatypeConverter.parseHexBinary(hexNonce);
-
-        String hexMsgEncrypted = "4d5a57c461d97df83bebdc98237e64d19f41a70637e53fed48b8a7f87ff3bdc6f0e7e3ffdb1a809ac38c75ccdac32e11";
-        byte [] encryptedText = DatatypeConverter.parseHexBinary(hexMsgEncrypted);
-
-
-        System.out.println("\n------ AES GCM Decryption ------");
-        System.out.println(String.format(OUTPUT_FORMAT, "Input (hex)", CryptoUtils.hex(encryptedText)));
-        System.out.println(String.format(OUTPUT_FORMAT, "Input (hex) (block = 16)", CryptoUtils.hexWithBlockSize(encryptedText, 16)));
-        System.out.println(String.format(OUTPUT_FORMAT, "Key (hex)", CryptoUtils.hex(secretKey.getEncoded())));
-
-//        String decryptedText = EncryptorAesGcm.decryptWithPrefixIV(encryptedText, secretKey);
-//        System.out.println(String.format(OUTPUT_FORMAT, "Decrypted (plain text)", decryptedText));
-        String decryptedText = EncryptorAesGcm.decrypt(encryptedText, secretKey, byteNonce);
-        System.out.println(decryptedText);
-
-    }
 }
