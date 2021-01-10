@@ -9,7 +9,7 @@ import java.util.Scanner;
 class TCPServer {
     static String key;
     static String nonce;
-    static String oriHash = "penis";  //original hash, just saved here for testing purposes
+    static String oriHash = "";  //original hash, just saved here for testing purposes
     static String tHash; //transmitted hash
     public static void main(String args[]) throws Exception {
         File myObj = new File("storage.txt");

@@ -7,11 +7,11 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        System.out.println("Wird gestartet...");
+        System.out.println("Starting...");
         // TCP Server starten...
         TCPServer.main(null);
 
-        System.out.println("Programm wird beendet...");
+        System.out.println("Closing...?");
 
     }
 }

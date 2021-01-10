@@ -16,11 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.DatatypeConverter;
 
-// bestimmt nicht einfach kopiert
 public class Decryption{
-    public static void main(String [] args) throws Exception {
-        //decrypt("fbd071c75ea09e05595770fa70a7d6d2faaf5002304e9f532e57e3c0ee8eb38c");
-    }
+    private static final String ENCRYPT_ALGO = "AES/GCM/NoPadding";
+    private static final int TAG_LENGTH_BIT = 128;
+
+    private static final Charset UTF_8 = StandardCharsets.UTF_8;
+
     public static String decrypt(String key, String nonce, String msg) throws Exception {
         String hexKey = key;
         byte [] encodedKey = DatatypeConverter.parseHexBinary(hexKey);
@@ -32,55 +33,15 @@ public class Decryption{
         String hexMsgEncrypted = msg;
         byte [] encryptedText = DatatypeConverter.parseHexBinary(hexMsgEncrypted);
 
-        String decryptedText = EncryptorAesGcm.decrypt(encryptedText, secretKey, byteNonce);
+        Cipher cipher = Cipher.getInstance(ENCRYPT_ALGO);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(TAG_LENGTH_BIT, byteNonce));
+        byte[] plainText = cipher.doFinal(encryptedText);
+        String decryptedText = new String(plainText, UTF_8);
         System.out.println(decryptedText);
 
         return decryptedText;
     }
-}
 
-class CryptoUtils {
-
-
-
-
-
-
-    // hex representation
-    public static String hex(byte[] bytes) {
-        StringBuilder result = new StringBuilder();
-        for (byte b : bytes) {
-            result.append(String.format("%02x", b));
-        }
-        return result.toString();
-    }
-
-    // print hex with block size split
-    public static String hexWithBlockSize(byte[] bytes, int blockSize) {
-
-        String hex = hex(bytes);
-
-        // one hex = 2 chars
-        blockSize = blockSize * 2;
-
-        // better idea how to print this?
-        List<String> result = new ArrayList<>();
-        int index = 0;
-        while (index < hex.length()) {
-            result.add(hex.substring(index, Math.min(index + blockSize, hex.length())));
-            index += blockSize;
-        }
-        return result.toString();
-    }
-
-}
-
-class EncryptorAesGcm {
-
-    private static final String ENCRYPT_ALGO = "AES/GCM/NoPadding";
-    private static final int TAG_LENGTH_BIT = 128;
-
-    private static final Charset UTF_8 = StandardCharsets.UTF_8;
 
 
 
@@ -92,5 +53,11 @@ class EncryptorAesGcm {
         return new String(plainText, UTF_8);
 
     }
+}
+
+
+class EncryptorAesGcm {
+
+
 
 }
