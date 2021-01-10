@@ -55,8 +55,10 @@ class TCPServer {
                         System.out.println("Nonce angekommen, du keks");
                         break;
                     case 'k':
+                        if(key == null){
                         key = param;
                         Printer.printToFile(key, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt"))));
+                        }
                         System.out.println(key + " gespeichert");
                         break;
                     case 'p':
@@ -74,7 +76,20 @@ class TCPServer {
                             break;
                         }
                         else{
-
+                            int pos1 = -1;
+                            int pos2 = -1;
+                            for(int i = 0; i<param.length(); i++){
+                                if(pos1 != -1){
+                                    pos1 = i;
+                                }
+                                else {
+                                    pos2 = i;
+                                }
+                            }
+                            nonce = param.substring(pos2 + 1);
+                            String tHash = Decryption.decrypt(key, nonce, param.substring(0, pos1));
+                            String nHash /*new hash*/ = Decryption.decrypt(key, nonce, param.substring(pos1 +1, pos2));
+                            if(hashCheck(tHash)) Printer.printToFile(key, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt"))));
                         }
                     case 'a': // a für "password action" aka halts maul justin und formulier gescheit was du sagen willst
                         System.out.println("PaSsWoRd AcTiOn");
