@@ -26,24 +26,21 @@ class TCPServer {
         DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         Scanner sc = new Scanner(myObj);
-        boolean exists = true;
         try{
             key = sc.nextLine();
             oriHash = sc.nextLine();
         }
         catch(Exception e){
             BashIn.exec("touch storage.txt");
-            exists = false;
         }
-        if(oriHash.length() <5) exists = false;
         String fromclient;
 
         // first startup
         boolean fsu = true;
 
-        ServerSocket Server = new ServerSocket(6969);
+        ServerSocket Server = new ServerSocket(5000);
 
-        System.out.println("TCPServer waiting for client on port 6969 ");
+        System.out.println("TCPServer waiting for client on port 5000 ");
         Printer.printToFile(dateF.format(date) + ": Server starts", logWriter);
 
         while (true) {
