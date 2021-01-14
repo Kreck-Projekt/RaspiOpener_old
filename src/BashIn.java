@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 public class BashIn {
 
     // hat noch keine funktion, weil ich das noch nicht zum laufen bekommen hab.
@@ -6,8 +8,8 @@ public class BashIn {
 
     }
 
-    public static void passwd(String cPassword, String nPassword){
-
+    public static void exec(String cmd) throws IOException {
+        Runtime.getRuntime().exec(cmd);
     }
 
 }

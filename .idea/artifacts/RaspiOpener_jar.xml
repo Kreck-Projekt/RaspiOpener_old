@@ -3,8 +3,7 @@
     <output-path>$PROJECT_DIR$/out/artifacts/RaspiOpener_jar</output-path>
     <root id="archive" name="RaspiOpener.jar">
       <element id="module-output" name="RaspiOpener" />
-      <element id="extracted-dir" path="$USER_HOME$/Downloads/pi4j-1.2/pi4j-1.2/lib/pi4j-core.jar" path-in-jar="/" />
-      <element id="file-copy" path="$USER_HOME$/Downloads/pi4j-1.2/pi4j-1.2/lib/pi4j-core.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/pi4j-core.jar" />
     </root>
   </artifact>
 </component>

@@ -10,7 +10,7 @@ public class GpioController {
         // sets the previously specified pin from 0V to 3.3V
         pin.high();
         System.out.println("pin on");
-        Thread.sleep(2000);
+        Thread.sleep(time);
         pin.low();
         System.out.println("pin off");
 

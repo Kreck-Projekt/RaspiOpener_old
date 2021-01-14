@@ -10,7 +10,16 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Downloads/pi4j-1.2/pi4j-1.2/lib/pi4j-core.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/pi4j-core.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/pi4j-gpio-extension.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
