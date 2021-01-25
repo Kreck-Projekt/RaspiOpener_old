@@ -12,17 +12,16 @@ class TCPServer {
     static String oriHash = "";  //original hash, just saved here for testing purposes
     static String tHash; //transmitted hash
     static PrintWriter logWriter;
-
-    static {
-        try {
-            logWriter = new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    private static File myObj;
 
     public static void main(String args[]) throws Exception {
-        File myObj = new File("storage.txt");
+        try {
+            myObj = new File("storage.txt");
+        }
+        catch(Exception e){
+            BashIn.exec("touch storage.txt");
+            myObj = new File("storage.txt");
+        }
         DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         Scanner sc = new Scanner(myObj);
@@ -41,19 +40,21 @@ class TCPServer {
         ServerSocket Server = new ServerSocket(5000);
 
         System.out.println("TCPServer waiting for client on port 5000 ");
-        Printer.printToFile(dateF.format(date) + ": Server starts", logWriter);
+        Printer.printToFile(dateF.format(date) + ": Server starts", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
 
         while (true) {
             Socket connected = Server.accept();
-            System.out.println("Client at " + " " + connected.getInetAddress()
-                    + ":" + connected.getPort() + " connected ");
-            Printer.printToFile(dateF.format(date) + ": Client at " + connected.getInetAddress() + " connected", logWriter);
+            String outToFile = dateF.format(date) + ": Client at " + connected.getInetAddress() + " connected";
+            System.out.println("Client at " + " " + connected.getInetAddress()+ ":" + connected.getPort() + " connected ");
+            System.out.println(connected.getInetAddress());
+            if(connected.getInetAddress().toString() != "Client at /127.0.0.1 connected\n") {
+                Printer.printToFile(dateF.format(date) + ": Client at " + connected.getInetAddress() + " connected", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
+            }
 
-            BufferedReader fromClient = new BufferedReader(
-                    new InputStreamReader(connected.getInputStream()));
+            BufferedReader fromClient = new BufferedReader(new InputStreamReader(connected.getInputStream()));
 
             PrintWriter toClient = new PrintWriter(connected.getOutputStream(), true);
-            if(fsu == true){
+            if(fsu){
                 toClient.println("BUT NOT FOR ME");
                 fsu = false;
             }
@@ -64,7 +65,7 @@ class TCPServer {
                 // receive from app
                 fromclient = fromClient.readLine();
                 System.out.println("Recieved: " + fromclient);
-                Printer.printToFile(dateF.format(date) + ": Client sent " + fromclient.charAt(0) + " command", logWriter);
+                if(fromclient.charAt(0) != 'H') Printer.printToFile(dateF.format(date) + ": Client sent " + fromclient.charAt(0) + " command", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                 String param = fromclient.substring(2);
                 boolean first /*the first found semicolon*/ = false;
                 for(int i = 0; i<param.length(); i++){
@@ -80,7 +81,7 @@ class TCPServer {
                         if(key == null){
                             key = param;
                             Printer.printToFile(key, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt"))));
-                            Printer.printToFile(dateF.format(date) + ": Key set to: " + key, logWriter);
+                            Printer.printToFile(dateF.format(date) + ": Key set to: " + key, new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                         }
                         break;
                     case 'p':
@@ -93,7 +94,7 @@ class TCPServer {
                             String s = Decryption.decrypt(key, nonce, param);
                             oriHash = s;
                             Printer.printToFile(oriHash, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt", true))));
-                            Printer.printToFile(dateF.format(date) + ": The password hash was set to: " + oriHash, logWriter);
+                            Printer.printToFile(dateF.format(date) + ": The password hash was set to: " + oriHash, new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                             break;
                     case 'c':
                         String nHash = null;
@@ -115,13 +116,13 @@ class TCPServer {
                         if(hashCheck(tHash)) {
                             oriHash = nHash;
                             Printer.printToFile(key + "\n" + nHash, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt"))));
-                            Printer.printToFile(dateF.format(date) + ": Password hash was changed to: " + nHash, logWriter);
+                            Printer.printToFile(dateF.format(date) + ": Password hash was changed to: " + nHash, new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                         }
                         break;
                     case 'a': // a für "password action" aka halts maul justin und formulier gescheit was du sagen willst du keks
                         System.out.println("PaSsWoRd AcTiOn"); // this case is irrelevant
                         System.out.println("Junge sag doch einfach, dass das als öffnen gemeint war");
-                        Printer.printToFile(dateF.format(date) + ": Das hätte definitiv nicht passieren sollen? #weirdflexbutok", logWriter);
+                        Printer.printToFile(dateF.format(date) + ": Das hätte definitiv nicht passieren sollen? #weirdflexbutok", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                         break;
                     case 'o': // O für open
                         for(int i = 0; i<param.length(); i++){
@@ -141,10 +142,13 @@ class TCPServer {
                         }
                         if (hashCheck(dcrMsg.substring(0, posPas))) {
                             System.out.println("Door is being opened...\n");
+                            Printer.printToFile(dateF.format(date) + ": Door is opened", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                             GpioController.activate(Integer.valueOf(dcrMsg.substring(posPas+1)));
                         }
-                        else System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
-                        Printer.printToFile(dateF.format(date) + ": client used a wrong password", logWriter);
+                        else {
+                            System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
+                            Printer.printToFile(dateF.format(date) + ": client used a wrong password", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
+                        }
                             break;
                     case 'r':
                         BashIn.exec("rm storage.txt");
@@ -155,7 +159,7 @@ class TCPServer {
                     default:
                         //also irrelevant
                         System.out.println("hat wohl nich gegeht ¯\\_(ツ)_/¯ ");
-                        Printer.printToFile(dateF.format(date) + ": Wie zur hölle bist du hier gelandet??? #nochweirdererflex", logWriter);
+                        Printer.printToFile(dateF.format(date) + ": Wie zur hölle bist du hier gelandet??? #nochweirdererflex", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                 }
 
 
