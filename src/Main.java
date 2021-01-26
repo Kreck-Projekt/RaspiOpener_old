@@ -17,8 +17,9 @@ public class Main {
                 TCPServer.main(null);
             }
             catch(Exception e){
+                e.printStackTrace();
                 System.out.println("Closing...?");
-                Printer.printToFile(dateF.format(date) + ": server crashed?", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));;
+                Printer.printToFile(dateF.format(date) + ": server crashed?" + e.getStackTrace(), new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));;
             }
         }
     }

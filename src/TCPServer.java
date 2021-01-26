@@ -44,12 +44,8 @@ class TCPServer {
 
         while (true) {
             Socket connected = Server.accept();
-            String outToFile = dateF.format(date) + ": Client at " + connected.getInetAddress() + " connected";
+            date = new Date();
             System.out.println("Client at " + " " + connected.getInetAddress()+ ":" + connected.getPort() + " connected ");
-            System.out.println(connected.getInetAddress());
-            if(connected.getInetAddress().toString() != "Client at /127.0.0.1 connected\n") {
-                Printer.printToFile(dateF.format(date) + ": Client at " + connected.getInetAddress() + " connected", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
-            }
 
             BufferedReader fromClient = new BufferedReader(new InputStreamReader(connected.getInputStream()));
 
@@ -65,7 +61,7 @@ class TCPServer {
                 // receive from app
                 fromclient = fromClient.readLine();
                 System.out.println("Recieved: " + fromclient);
-                if(fromclient.charAt(0) != 'H') Printer.printToFile(dateF.format(date) + ": Client sent " + fromclient.charAt(0) + " command", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
+                if(fromclient.charAt(0) != 'H') Printer.printToFile(dateF.format(date) + ": Client at: " + connected.getInetAddress() + " sent " + fromclient.charAt(0) + " command", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                 String param = fromclient.substring(2);
                 boolean first /*the first found semicolon*/ = false;
                 for(int i = 0; i<param.length(); i++){
