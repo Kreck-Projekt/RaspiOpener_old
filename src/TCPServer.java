@@ -70,7 +70,7 @@ class TCPServer {
                 case 'n':
                     break;
                 case 'k':
-                    if (key == null) {
+                    if ((key == null || key == "") && param.length() == 32) {
                         key = param;
                         Printer.printToFile(key, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt"))));
                         Printer.printToFile(dateF.format(new Date()) + ": Key set to: " + key, new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
