@@ -13,7 +13,6 @@ public class GpioController {
         Thread.sleep(time);
         pin.low();
         System.out.println("pin off");
-
     }
 }
 
