@@ -20,8 +20,8 @@ public class Main {
         catch(Exception e){
             e.printStackTrace(pw);
             System.out.println("Closing...?");
-            Printer.printToFile(dateF.format(new Date()) + ": server crashed?" + sw.toString(), new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
-
+            //Printer.printToFile(dateF.format(new Date()) + ": server crashed?" + sw.toString(), new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
+            Printer.printToFile(dateF.format(new Date()) + ": server crashed? " + sw.toString(), "log.txt", true);
         }
 
     }
