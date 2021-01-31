@@ -1,10 +1,8 @@
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Scanner;
 
 public class Main {
     private static StringWriter sw = new StringWriter();
@@ -12,6 +10,12 @@ public class Main {
     private static DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     public static void main(String[] args) throws Exception {
 
+        try{
+            Scanner sc = new Scanner(new File("storage.txt"));
+        }
+        catch (FileNotFoundException e){
+            BashIn.exec("sudo touch storage.txt");
+        }
         try{
             System.out.println("Starting...");
             // TCP Server starten...

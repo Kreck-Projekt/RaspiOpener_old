@@ -7,21 +7,14 @@ import java.util.Date;
 import java.util.Scanner;
 
 class TCPServer {
+    private static boolean secured = false;
     static String key;
     static String nonce;
     static String oriHash = "";  //original hash, just saved here for testing purposes
     static String tHash; //transmitted hash
-    static PrintWriter logWriter;
-    private static File myObj;
 
     public static void run() throws Exception {
-        try {
-            myObj = new File("storage.txt");
-        }
-        catch(Exception e){
-            BashIn.exec("touch storage.txt");
-            myObj = new File("storage.txt");
-        }
+        File myObj = new File("storage.txt");
         DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Scanner sc = new Scanner(myObj);
         try{
@@ -29,7 +22,8 @@ class TCPServer {
             oriHash = sc.nextLine();
         }
         catch(Exception e){
-            BashIn.exec("touch storage.txt");
+            e.printStackTrace();
+            secured = true;
         }
         String fromclient;
 
@@ -39,7 +33,6 @@ class TCPServer {
         ServerSocket Server = new ServerSocket(5000);
 
         System.out.println("TCPServer waiting for client on port 5000 ");
-        //Printer.printToFile(dateF.format(new Date()) + ": Server starts", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
         Printer.printToFile(dateF.format(new Date()) + ": Server starts", "log.txt", true);
         while (true) {
             Socket connected = Server.accept();
@@ -55,7 +48,11 @@ class TCPServer {
             toClient.println("Connected");
             // receive from app
             fromclient = fromClient.readLine();
-            System.out.println("Recieved: " + fromclient); //Printer.printToFile(dateF.format(new Date()) + ": Client at: " + connected.getInetAddress() + " sent " + fromclient.charAt(0) + " command", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
+            System.out.println("Recieved: " + fromclient);
+            if(fromclient.charAt(1) != ':') {
+                connected.close();
+                continue;
+            } //checks if the sent message is a command
             if (fromclient.charAt(0) != 'H') Printer.printToFile(dateF.format(new Date()) + ": Client at: " + connected.getInetAddress() + " sent " + fromclient.charAt(0) + " command", "log.txt", true);
             String param = fromclient.substring(2);
             boolean first /*the first found semicolon*/ = false;
@@ -69,11 +66,9 @@ class TCPServer {
                 case 'n':
                     break;
                 case 'k':
-                    if ((key == null || key == "") && param.length() == 32) {
+                    if (((key == null || key.equals("")) && param.length() == 32) && secured) {
                         key = param;
-                        //Printer.printToFile(key, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt"))));
                         Printer.printToFile(key, "storage.txt", false);
-                        //Printer.printToFile(dateF.format(new Date()) + ": Key set to: " + key, new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                         Printer.printToFile(dateF.format(new Date()) + ": Key set to: " + key, "log.txt", true);
                     }
                     break;
@@ -84,11 +79,8 @@ class TCPServer {
                             param = param.substring(0, i);
                         }
                     }
-                    String s = Decryption.decrypt(key, nonce, param);
-                    oriHash = s;
-                    //Printer.printToFile(oriHash, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt", true))));
+                    oriHash = Decryption.decrypt(key, nonce, param);
                     Printer.printToFile(oriHash, "storage.txt", true);
-                    //Printer.printToFile(dateF.format(new Date()) + ": The password hash was set to: " + oriHash, new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                     Printer.printToFile(dateF.format(new Date()) + ": The password hash was set to: " + oriHash, "log.txt", true);
                     break;
                 case 'c':
@@ -110,16 +102,13 @@ class TCPServer {
                     }
                     if (hashCheck(tHash)) {
                         oriHash = nHash;
-                        //Printer.printToFile(key + "\n" + nHash, new PrintWriter(new BufferedWriter(new FileWriter("storage.txt"))));
                         Printer.printToFile(key + "\n" + nHash, "storage.txt", false);
-                        //Printer.printToFile(dateF.format(new Date()) + ": Password hash was changed to: " + nHash, new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                         Printer.printToFile(dateF.format(new Date()) + ": Password hash was changed to: " + nHash, "log.txt", true);
                     }
                     break;
                 case 'a': // a für "password action" aka halts maul justin und formulier gescheit was du sagen willst du keks
                     System.out.println("PaSsWoRd AcTiOn"); // this case is irrelevant
                     System.out.println("Junge sag doch einfach, dass das als öffnen gemeint war");
-                    //Printer.printToFile(dateF.format(new Date()) + ": Das hätte definitiv nicht passieren sollen? #weirdflexbutok", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                     Printer.printToFile(dateF.format(new Date()) + ": Das hätte definitiv nicht passieren sollen? #weirdflexbutok", "log.txt", true);
                     break;
                 case 'o': // O für open
@@ -140,12 +129,10 @@ class TCPServer {
                     }
                     if (hashCheck(dcrMsg.substring(0, posPas))) {
                         System.out.println("Door is being opened...\n");
-                        GpioController.activate(Integer.valueOf(dcrMsg.substring(posPas + 1)));
-                        //Printer.printToFile(dateF.format(new Date()) + ": Door is opened", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
+                        GpioController.activate(Integer.parseInt(dcrMsg.substring(posPas + 1)));
                         Printer.printToFile(dateF.format(new Date()) + ": Door is being opened","log.txt", true);
                     } else {
                         System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
-                        //Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                         Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", "log.txt", true);
                         toClient.println("Wrong password");
                     }
@@ -168,13 +155,11 @@ class TCPServer {
                     }
                     if (hashCheck(dcrHsh.substring(0, posPas))) {
                         System.out.println("Door is being opened...\n");
-                        //Printer.printToFile(dateF.format(new Date()) + ": Door is opened", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                         Printer.printToFile(dateF.format(new Date()) + ": The Pi was reset from IP address: " + connected.getInetAddress(), "log.txt", true);
-                        BashIn.exec("rm storage.txt");
-                        BashIn.exec("touch storage.txt");
+                        BashIn.exec("sudo rm storage.txt");
+                        BashIn.exec("sudo touch storage.txt");
                     } else {
                         System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
-                        //Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                         Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", "log.txt", true);
                         toClient.println("Wrong password");
                     }
@@ -185,14 +170,11 @@ class TCPServer {
                 default:
                     //also irrelevant
                     System.out.println("hat wohl nich gegeht ¯\\_(ツ)_/¯ ");
-                    //Printer.printToFile(dateF.format(new Date()) + ": Wie zur Hölle bist du hier gelandet??? #nochweirdererflex", new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                     Printer.printToFile(dateF.format(new Date()) + ": Wie zur Hölle bist du hier gelandet??? #nochweirdererflex", "log.txt", true);
-                    //Printer.printToFile(dateF.format(new Date()) + ": The whole message was: " + fromclient, new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
                     Printer.printToFile(dateF.format(new Date()) + ": The whole message was: " + fromclient, "log.txt", true);
                     toClient.println("What do you want from this poor Server? \uD83E\uDD7A");
                     break;
             }
-
 
             //Justin wollte iwie ne nachricht idk
 
@@ -210,8 +192,7 @@ class TCPServer {
 
 
     private static boolean hashCheck (String tHash){
-        if(tHash.equals(/*hash aus speicher?*/oriHash)) return true;
-        else return false;
+        return tHash.equals(/*hash aus speicher?*/oriHash);
     }
 
 }
