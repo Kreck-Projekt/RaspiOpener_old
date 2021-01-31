@@ -49,10 +49,16 @@ class TCPServer {
             // receive from app
             fromclient = fromClient.readLine();
             System.out.println("Recieved: " + fromclient);
-            if(fromclient.charAt(1) != ':') {
+            try{
+                if (fromclient.charAt(1) != ':') {
+                    connected.close();
+                    continue;
+                } //checks if the sent message is a command#
+            }
+            catch (Exception e){
                 connected.close();
                 continue;
-            } //checks if the sent message is a command
+            }
             if (fromclient.charAt(0) != 'H') Printer.printToFile(dateF.format(new Date()) + ": Client at: " + connected.getInetAddress() + " sent " + fromclient.charAt(0) + " command", "log.txt", true);
             String param = fromclient.substring(2);
             boolean first /*the first found semicolon*/ = false;
