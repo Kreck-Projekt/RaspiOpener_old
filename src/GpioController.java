@@ -9,10 +9,8 @@ public class GpioController {
     public static void activate(long time)  throws InterruptedException {
         // sets the previously specified pin from 0V to 3.3V
         pin.high();
-        System.out.println("pin on");
         Thread.sleep(time);
         pin.low();
-        System.out.println("pin off");
     }
 }
 
