@@ -11,6 +11,7 @@ public class GpioController {
         pin.high();
         Thread.sleep(time);
         pin.low();
+        System.out.println("lmao");
     }
 }
 
