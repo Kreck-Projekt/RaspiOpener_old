@@ -17,6 +17,12 @@ public class Main {
             BashIn.exec("sudo touch storage.txt");
         }
         try{
+            Scanner sc = new Scanner(new File("otpStore.txt"));
+        }
+        catch(FileNotFoundException e){
+            BashIn.exec("sudo touch otpStore.txt");
+        }
+        try{
             System.out.println("Starting...");
             // TCP Server starten...
             TCPServer.run();

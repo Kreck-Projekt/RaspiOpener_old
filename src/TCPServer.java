@@ -17,10 +17,11 @@ class TCPServer {
     static List<String> otps;
 
     public static void run() throws Exception {
-        File myObj = new File("storage.txt");
+        File keyPasStore = new File("storage.txt");
+        File otpStore = new File("otpStore.txt");
         DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Scanner kpsc = new Scanner(myObj);
-        Scanner otpscan = new Scanner(myObj);
+        Scanner kpsc = new Scanner(keyPasStore);
+        Scanner otpscan = new Scanner(otpStore);
         try{
             key = kpsc.nextLine();
             oriHash = kpsc.nextLine();
@@ -35,6 +36,7 @@ class TCPServer {
                 otps.add(otpscan.nextLine());
             }
             catch(Exception e){
+                e.printStackTrace();
                 break;
             }
 
@@ -150,10 +152,48 @@ class TCPServer {
                             }
                         }
                         try{
-                            Printer.printToFile();
+                            Printer.printToFile(dcrOTP + "\n", "otpStore.txt", true);
+                            otps.add(dcrOTP);
+                        }
+                        catch(FileNotFoundException fnfe){
+                            BashIn.exec("sudo touch otpStore.txt");
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
                         }
                         break;
-                    case 'e': // einmalöffnung
+                    case 'e': // einmalöffnung "e:<otp>"
+                        String openTime = null;
+                        for (int i = 0; i < param.length(); i++) {
+                            if (!first && param.charAt(i) == ';') first = true;
+                            else if (first && param.charAt(i) == ';') {
+                                openTime = param.substring(i + 1);
+                                param = param.substring(0, i);
+                            }
+                        }
+                        int remPos;
+                        for (int i = 0; i<otps.size(); i++) {
+                            if(otps.get(i) == param){
+                                System.out.println("Door is being opened by OTP...");
+                                GpioController.activate(Integer.parseInt(openTime));
+                                Printer.printToFile(dateF.format(new Date()) + ": Door is being opened by OTP", "log.txt", true);
+                                otps.remove(i);
+                                try {
+                                    BashIn.exec("sudo rm otpStore.txt");
+                                    BashIn.exec("sudo touch otpStore.txt");
+                                    for (int j = 0; j < otps.size(); j++) {
+                                        Printer.printToFile(otps.get(j), "otpStore.txt", true);
+                                    }
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+                            else{
+                                System.out.println("Client used a wrong OTP");
+                                Printer.printToFile(dateF.format(new Date()) + ": A wrong OTP has been used", "log.txt", true);
+                            }
+                        }
                         break;
                     case 'a': // a für "password action" aka halts maul justin und formulier gescheit was du sagen willst du keks
                         System.out.println("PaSsWoRd AcTiOn"); // this case is irrelevant
