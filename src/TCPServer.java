@@ -134,9 +134,27 @@ class TCPServer {
                             Printer.printToFile(dateF.format(new Date()) + ": Password hash was changed to: " + nHash, "log.txt", true);
                         }
                         break;
-                    case 's':
+                    case 's': // setOTP
+                        for (int i = 0; i < param.length(); i++) {
+                            if (!first && param.charAt(i) == ';') first = true;
+                            else if (first && param.charAt(i) == ';') {
+                                nonce = param.substring(i + 1);
+                                param = param.substring(0, i);
+                            }
+                        }
+                        String dcrOTP = Decryption.decrypt(key, nonce, param);
+                        for (int i = 0; i < dcrOTP.length(); i++) {
+                            if (dcrOTP.charAt(i) == ';') {
+                                posPas = i;
+                                break;
+                            }
+                        }
+                        try{
+                            Printer.printToFile();
+                        }
                         break;
-                    //case 'e'
+                    case 'e': // einmalöffnung
+                        break;
                     case 'a': // a für "password action" aka halts maul justin und formulier gescheit was du sagen willst du keks
                         System.out.println("PaSsWoRd AcTiOn"); // this case is irrelevant
                         System.out.println("Junge sag doch einfach, dass das als öffnen gemeint war");
