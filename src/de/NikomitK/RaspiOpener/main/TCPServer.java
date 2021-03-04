@@ -18,6 +18,7 @@ class TCPServer {
     static String oriHash = "";  //original hash, just saved here for testing purposes
     static String tHash; //transmitted hash
     static List<String> otps;
+    private static Handler handler;
 
     public static void run() throws Exception {
         File keyPasStore = new File("storage.txt");
@@ -45,6 +46,9 @@ class TCPServer {
 
         }
 
+        handler.key = key;
+        handler.oriHash = oriHash;
+
         String fromclient;
 
         // first startup
@@ -55,6 +59,8 @@ class TCPServer {
         System.out.println("de.NikomitK.RaspiOpener.main.TCPServer waiting for client on port 5000 ");
         Printer.printToFile(dateF.format(new Date()) + ": Server starts", "log.txt", true);
         while (true) {
+
+
             try{
                 Socket connected = Server.accept();
                 System.out.println("Client at " + " " + connected.getInetAddress() + ":" + connected.getPort() + " connected ");
@@ -95,77 +101,94 @@ class TCPServer {
                     else if (first && param.charAt(i) == ';') nonce = param.substring(i + 1);
                 }
                 int posPas = -1;
+
+
                 switch (fromclient.charAt(0)) {
-                    case 'n':
+                    case 'n': //irrelevant
                         break;
-                    case 'k':
-                        if (((key == null || key.equals("")) && param.length() == 32) && secured) {
-                            key = param;
-                            Printer.printToFile(key, "storage.txt", false);
-                            Printer.printToFile(dateF.format(new Date()) + ": Key set to: " + key, "log.txt", true);
-                        }
+
+                    case 'k': //storeKey done
+                        // Command syntax: "k:<key>"
+                        if (((key == null || key.equals("")) && param.length() == 32) && secured)
+                            handler.storeKey(param);
+                            key = handler.key;
                         break;
-                    case 'p':
-                        for (int i = 0; i < param.length(); i++) {
-                            if (param.charAt(i) == ';') {
-                                nonce = param.substring(i + 1);
-                                param = param.substring(0, i);
-                            }
-                        }
-                        oriHash = Decryption.decrypt(key, nonce, param);
-                        Printer.printToFile(oriHash, "storage.txt", true);
-                        Printer.printToFile(dateF.format(new Date()) + ": The password hash was set to: " + oriHash, "log.txt", true);
+
+                    case 'p': //storePW done
+                        // Command syntax: "p:(<hash>);<nonce>"
+//                        for (int i = 0; i < param.length(); i++) {
+//                            if (param.charAt(i) == ';') {
+//                                nonce = param.substring(i + 1);
+//                                param = param.substring(0, i);
+//                            }
+//                        }
+//                        oriHash = Decryption.decrypt(key, nonce, param);
+//                        Printer.printToFile(oriHash, "storage.txt", true);
+//                        Printer.printToFile(dateF.format(new Date()) + ": The password hash was set to: " + oriHash, "log.txt", true);
+                        boolean pwStored = handler.storePW(param);
+                        if(!pwStored) System.out.println("Das hat nicht geklappt! :(");
+                        oriHash = handler.oriHash;
                         break;
-                    case 'c':
-                        String nHash = null;
-                        String hashes = null;
-                        for (int i = 0; i < param.length(); i++) {
-                            if (param.charAt(i) == ';') {
-                                nonce = param.substring(i + 1);
-                                hashes = param.substring(0, i);
-                            }
-                        }
-                        System.out.println(nonce);
-                        param = Decryption.decrypt(key, nonce, hashes);
-                        for (int i = 0; i < param.length(); i++) {
-                            if (param.charAt(i) == ';') {
-                                nHash = param.substring(i + 1);
-                                tHash = param.substring(0, i);
-                            }
-                        }
-                        if (hashCheck(tHash)) {
-                            oriHash = nHash;
-                            Printer.printToFile(key + "\n" + nHash, "storage.txt", false);
-                            Printer.printToFile(dateF.format(new Date()) + ": Password hash was changed to: " + nHash, "log.txt", true);
-                        }
+
+                    case 'c': //changePW done
+                        // Command syntax: "c:(<oldHash>;<newHash>);<nonce>"
+//                        String nHash = null;
+//                        String hashes = null;
+//                        for (int i = 0; i < param.length(); i++) {
+//                            if (param.charAt(i) == ';') {
+//                                nonce = param.substring(i + 1);
+//                                hashes = param.substring(0, i);
+//                            }
+//                        }
+//                        System.out.println(nonce);
+//                        param = Decryption.decrypt(key, nonce, hashes);
+//                        for (int i = 0; i < param.length(); i++) {
+//                            if (param.charAt(i) == ';') {
+//                                nHash = param.substring(i + 1);
+//                                tHash = param.substring(0, i);
+//                            }
+//                        }
+//                        if (hashCheck(tHash)) {
+//                            oriHash = nHash;
+//                            Printer.printToFile(key + "\n" + nHash, "storage.txt", false);
+//                            Printer.printToFile(dateF.format(new Date()) + ": Password hash was changed to: " + nHash, "log.txt", true);
+//                        }
+                        boolean changed = handler.changePW(param);
+                        if(!changed) System.out.println("Das hat nicht geklappt! :(");
                         break;
-                    case 's': // setOTP
-                        for (int i = 0; i < param.length(); i++) {
-                            if (!first && param.charAt(i) == ';') first = true;
-                            else if (first && param.charAt(i) == ';') {
-                                nonce = param.substring(i + 1);
-                                param = param.substring(0, i);
-                            }
-                        }
-                        String dcrOTP = Decryption.decrypt(key, nonce, param);
-                        for (int i = 0; i < dcrOTP.length(); i++) {
-                            if (dcrOTP.charAt(i) == ';') {
-                                posPas = i;
-                                break;
-                            }
-                        }
-                        try{
-                            Printer.printToFile(dcrOTP + "\n", "otpStore.txt", true);
-                            otps.add(dcrOTP);
-                        }
-                        catch(FileNotFoundException fnfe){
-                            BashIn.exec("sudo touch otpStore.txt");
-                        }
-                        catch (Exception e){
-                            e.printStackTrace();
-                        }
+
+                    case 's': // setOTP done
+                        // Command syntax "s:(<otp>;<hash>);nonce"
+                        boolean otpSet = handler.setOTP(param);
+                        if(!otpSet) System.out.println("Das hat nicht geklappt! :(");
                         break;
-                    case 'e': // einmalöffnung "e:<otp>"
+//                        for (int i = 0; i < param.length(); i++) {
+//                            if (!first && param.charAt(i) == ';') first = true;
+//                            else if (first && param.charAt(i) == ';') {
+//                                nonce = param.substring(i + 1);
+//                                param = param.substring(0, i);
+//                            }
+//                        }
+//                        String dcrOTP = Decryption.decrypt(key, nonce, param);
+//                        for (int i = 0; i < dcrOTP.length(); i++) {
+//                            if (dcrOTP.charAt(i) == ';') {
+//                                posPas = i;
+//                                break;
+//                            }
+//                        }
+//                        try{
+//                            Printer.printToFile(dcrOTP + "\n", "otpStore.txt", true);
+//                            otps.add(dcrOTP);
+//                        }
+//                        catch(FileNotFoundException fnfe){
+//                            BashIn.exec("sudo touch otpStore.txt");
+//                        }
+//                        catch (Exception e){
+//                            e.printStackTrace();
+//                        }
+
+                    case 'e': // einmalöffnung in Progress
+                        // Command syntax: "e:<otp>;<time>"
                         String openTime = null;
                         for (int i = 0; i < param.length(); i++) {
                             if (!first && param.charAt(i) == ';') first = true;
@@ -198,12 +221,15 @@ class TCPServer {
                             }
                         }
                         break;
+
                     case 'a': // a für "password action" aka halts maul justin und formulier gescheit was du sagen willst du keks
                         System.out.println("PaSsWoRd AcTiOn"); // this case is irrelevant
                         System.out.println("Junge sag doch einfach, dass das als öffnen gemeint war");
                         Printer.printToFile(dateF.format(new Date()) + ": Das hätte definitiv nicht passieren sollen? #weirdflexbutok", "log.txt", true);
                         break;
+
                     case 'o': // O für open
+                        // Command syntax: "o:(<hash>;<time>);<nonce>"
                         for (int i = 0; i < param.length(); i++) {
                             if (!first && param.charAt(i) == ';') first = true;
                             else if (first && param.charAt(i) == ';') {
@@ -233,7 +259,9 @@ class TCPServer {
                             toClient.println("Wrong password");
                         }
                         break;
-                    case 'r':
+
+                    case 'r': //reset
+                        // Command syntax: "r:(<hash>);<nonce>"
                         for (int i = 0; i < param.length(); i++) {
                             if (!first && param.charAt(i) == ';') first = true;
                             else if (first && param.charAt(i) == ';') {
@@ -260,9 +288,12 @@ class TCPServer {
                             toClient.println("Wrong password");
                         }
                         break;
-                    case 'H':
+
+                    case 'H': // "how are you", get's called from alivekeeper, never from user lmao
                         toClient.println("I'm fine, thanks");
                         break;
+
+
                     default:
                         //also irrelevant
                         System.out.println("hat wohl nich gegeht ¯\\_(ツ)_/¯ ");
@@ -271,6 +302,7 @@ class TCPServer {
                         toClient.println("What do you want from this poor Server? \uD83E\uDD7A");
                         break;
                 }
+
 
                 //Justin wollte iwie ne nachricht idk
 
@@ -282,6 +314,8 @@ class TCPServer {
 
                 connected.close();
             }
+
+
             catch(Exception e){
                 e.printStackTrace();
             }
