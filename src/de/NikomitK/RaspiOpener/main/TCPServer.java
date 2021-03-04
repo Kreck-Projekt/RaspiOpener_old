@@ -190,8 +190,8 @@ class TCPServer {
 
                     case 'e': // einmalöffnung done
                         // Command syntax: "e:<otp>;<time>"
-                        boolean onetimeOpened = handler.einmalOeffnung(param);
-                        if(!onetimeOpened) System.out.println("Das hat nicht geklappt! :(");
+                        boolean otOpened = handler.einmalOeffnung(param);
+                        if(!otOpened) System.out.println("Das hat nicht geklappt! :(");
                         otps = handler.otps;
                         break;
 //                        String openTime = null;
@@ -228,70 +228,77 @@ class TCPServer {
 
                     case 'a': // a für "password action" aka halts maul justin und formulier gescheit was du sagen willst du keks
                         System.out.println("PaSsWoRd AcTiOn"); // this case is irrelevant
-                        System.out.println("Junge sag doch einfach, dass das als öffnen gemeint war");
+                        System.out.println("Junge sag doch einfach, dass das als öffnen gemeint war"); // just ignore this
                         Printer.printToFile(dateF.format(new Date()) + ": Das hätte definitiv nicht passieren sollen? #weirdflexbutok", "log.txt", true);
                         break;
 
-                    case 'o': // O für open
+                    case 'o': // Open  done
                         // Command syntax: "o:(<hash>;<time>);<nonce>"
-                        for (int i = 0; i < param.length(); i++) {
-                            if (!first && param.charAt(i) == ';') first = true;
-                            else if (first && param.charAt(i) == ';') {
-                                nonce = param.substring(i + 1);
-                                param = param.substring(0, i);
-                            }
-                        }
-                        String dcrMsg = Decryption.decrypt(key, nonce, param);
-
-                        for (int i = 0; i < dcrMsg.length(); i++) {
-                            if (dcrMsg.charAt(i) == ';') {
-                                posPas = i;
-                                break;
-                            }
-                        }
-                        if (hashCheck(dcrMsg.substring(0, posPas))) {
-                            System.out.println("Door is being opened...");
-                            GpioController.activate(Integer.parseInt(dcrMsg.substring(posPas + 1)));
-                            Printer.printToFile(dateF.format(new Date()) + ": Door is being opened", "log.txt", true);
-                            Socket desktop = new Socket("192.168.0.2", 6969);
-                            PrintWriter toDesktop = new PrintWriter(connected.getOutputStream(), true);
-                            toDesktop.println("Opened");
-                            desktop.close();
-                        } else {
-                            System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
-                            Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", "log.txt", true);
-                            toClient.println("Wrong password");
-                        }
+                        boolean opened = handler.open(param);
+                        if(!opened) System.out.println("Das hat nicht geklappt! :(");
                         break;
+//                        for (int i = 0; i < param.length(); i++) {
+//                            if (!first && param.charAt(i) == ';') first = true;
+//                            else if (first && param.charAt(i) == ';') {
+//                                nonce = param.substring(i + 1);
+//                                param = param.substring(0, i);
+//                            }
+//                        }
+//                        String dcrMsg = Decryption.decrypt(key, nonce, param);
+//
+//                        for (int i = 0; i < dcrMsg.length(); i++) {
+//                            if (dcrMsg.charAt(i) == ';') {
+//                                posPas = i;
+//                                break;
+//                            }
+//                        }
+//                        if (hashCheck(dcrMsg.substring(0, posPas))) {
+//                            System.out.println("Door is being opened...");
+//                            GpioController.activate(Integer.parseInt(dcrMsg.substring(posPas + 1)));
+//                            Printer.printToFile(dateF.format(new Date()) + ": Door is being opened", "log.txt", true);
+//                            Socket desktop = new Socket("192.168.0.2", 6969);
+//                            PrintWriter toDesktop = new PrintWriter(connected.getOutputStream(), true);
+//                            toDesktop.println("Opened");
+//                            desktop.close();
+//                        } else {
+//                            System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
+//                            Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", "log.txt", true);
+//                            toClient.println("Wrong password");
+//                        }
 
                     case 'r': //reset
                         // Command syntax: "r:(<hash>);<nonce>"
-                        for (int i = 0; i < param.length(); i++) {
-                            if (!first && param.charAt(i) == ';') first = true;
-                            else if (first && param.charAt(i) == ';') {
-                                nonce = param.substring(i + 1);
-                                param = param.substring(0, i);
-                            }
-                        }
-                        String dcrHsh = Decryption.decrypt(key, nonce, param);
-
-                        for (int i = 0; i < dcrHsh.length(); i++) {
-                            if (dcrHsh.charAt(i) == ';') {
-                                posPas = i;
-                                break;
-                            }
-                        }
-                        if (hashCheck(dcrHsh.substring(0, posPas))) {
-                            System.out.println("Door is being opened...\n");
-                            Printer.printToFile(dateF.format(new Date()) + ": The Pi was reset from IP address: " + connected.getInetAddress(), "log.txt", true);
-                            BashIn.exec("sudo rm keyPasStore.txt");
-                            BashIn.exec("sudo touch keyPasStore.txt");
-                        } else {
-                            System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
-                            Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", "log.txt", true);
-                            toClient.println("Wrong password");
-                        }
+                        boolean isReset = handler.reset(param);
+                        key = handler.key;
+                        oriHash = handler.oriHash;
                         break;
+//                        for (int i = 0; i < param.length(); i++) {
+//                            if (!first && param.charAt(i) == ';') first = true;
+//                            else if (first && param.charAt(i) == ';') {
+//                                nonce = param.substring(i + 1);
+//                                param = param.substring(0, i);
+//                            }
+//                        }
+//                        String dcrHsh = Decryption.decrypt(key, nonce, param);
+//
+//                        for (int i = 0; i < dcrHsh.length(); i++) {
+//                            if (dcrHsh.charAt(i) == ';') {
+//                                posPas = i;
+//                                break;
+//                            }
+//                        }
+//                        if (hashCheck(dcrHsh.substring(0, posPas))) {
+//                            System.out.println("Pi is getting reset...\n");
+//                            Printer.printToFile(dateF.format(new Date()) + ": The Pi was reset from IP address: " + connected.getInetAddress(), "log.txt", true);
+//                            BashIn.exec("sudo rm keyPasStore.txt");
+//                            BashIn.exec("sudo touch keyPasStore.txt");
+//                            BashIn.exec("sudo rm otpStore.txt");
+//                            BashIn.exec("sudo touch otpStore.txt");
+//                        } else {
+//                            System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
+//                            Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", "log.txt", true);
+//                            toClient.println("Wrong password");
+//                        }
 
                     case 'H': // "how are you", get's called from alivekeeper, never from user lmao
                         toClient.println("I'm fine, thanks");
@@ -328,9 +335,5 @@ class TCPServer {
 
         }
 
-
-    private static boolean hashCheck (String tHash){
-        return tHash.equals(/*hash aus speicher?*/oriHash);
-    }
 
 }

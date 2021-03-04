@@ -2,6 +2,8 @@ package de.NikomitK.RaspiOpener.handler;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.Date;
 import java.util.List;
 import java.text.DateFormat;
@@ -141,13 +143,71 @@ public class Handler {
         return true;
     }
 
-    public boolean open(String pMsg){
-
+    public boolean open(String pMsg) throws Exception {
+        boolean first = false;
+        int posHash = -1;
+        String nonce = null;
+        String enMsg = null;
+        String deMsg = null;
+        for (int i = 0; i < pMsg.length(); i++) {
+            if (!first && pMsg.charAt(i) == ';') first = true;
+            else if (first && pMsg.charAt(i) == ';') {
+                nonce = pMsg.substring(i + 1);
+                enMsg = pMsg.substring(0, i);
+            }
+        }
+        deMsg = Decryption.decrypt(key, nonce, enMsg);
+        for (int i = 0; i < deMsg.length(); i++) {
+            if (deMsg.charAt(i) == ';') {
+                posHash = i;
+                break;
+            }
+        }
+        if (oriHash.equals(deMsg.substring(0, posHash))) {
+            System.out.println("Door is being opened...");
+            GpioController.activate(Integer.parseInt(deMsg.substring(posHash + 1)));
+            Printer.printToFile(dateF.format(new Date()) + ": Door is being opened", "log.txt", true);
+        } else {
+            System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
+            Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", "log.txt", true);
+            //toClient.println("Wrong password"); I think this is useless cause the app doesn't receive anything
+        }
         return true;
     }
 
-    public boolean reset(String pMsg){
-
+    public boolean reset(String pMsg) throws Exception {
+        boolean first = false;
+        int posHash = -1;
+        String nonce = null;
+        String enMsg = null;
+        String deMsg = null;
+        for (int i = 0; i < pMsg.length(); i++) {
+            if (!first && pMsg.charAt(i) == ';') first = true;
+            else if (first && pMsg.charAt(i) == ';') {
+                nonce = pMsg.substring(i + 1);
+                enMsg = pMsg.substring(0, i);
+            }
+        }
+        deMsg = Decryption.decrypt(key, nonce, deMsg);
+        for (int i = 0; i < deMsg.length(); i++) {
+            if (deMsg.charAt(i) == ';') {
+                posHash = i;
+                break;
+            }
+        }
+        if (oriHash.equals(deMsg.substring(0, posHash))) {
+            System.out.println("Pi is getting reset...\n");
+            Printer.printToFile("\n\n\n" + dateF.format(new Date()) + ": The Pi was reset", "log.txt", true);
+            key = "";
+            oriHash = "";
+            BashIn.exec("sudo rm keyPasStore.txt");
+            BashIn.exec("sudo touch keyPasStore.txt");
+            BashIn.exec("sudo rm otpStore.txt");
+            BashIn.exec("sudo touch otpStore.txt");
+        } else {
+            System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
+            Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", "log.txt", true);
+        }
         return true;
     }
 
