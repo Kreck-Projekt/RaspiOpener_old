@@ -16,9 +16,7 @@ class TCPServer {
     static String key;
     static String nonce;
     static String oriHash = "";  //original hash, just saved here for testing purposes
-    static String tHash; //transmitted hash
     static List<String> otps;
-    private static Handler handler;
 
     public static void run() throws Exception {
         File keyPasStore = new File("keyPasStore.txt");
@@ -45,7 +43,7 @@ class TCPServer {
             }
 
         }
-
+        Handler handler = new Handler(key, oriHash, otps);
         handler.key = key;
         handler.oriHash = oriHash;
 
@@ -95,22 +93,24 @@ class TCPServer {
                     connected.close();
                     break;
                 }
-                boolean first /*the first found semicolon*/ = false;
-                for (int i = 0; i < param.length(); i++) {
-                    if (!first && param.charAt(i) == ';') first = true;
-                    else if (first && param.charAt(i) == ';') nonce = param.substring(i + 1);
-                }
-                int posPas = -1;
+//                boolean first /*the first found semicolon*/ = false;
+//                for (int i = 0; i < param.length(); i++) {
+//                    if (!first && param.charAt(i) == ';') first = true;
+//                    else if (first && param.charAt(i) == ';') nonce = param.substring(i + 1);
+//                }
+//                int posPas = -1;
 
-
+//                can this be removed???
                 switch (fromclient.charAt(0)) {
                     case 'n': //irrelevant
                         break;
 
                     case 'k': //storeKey done
                         // Command syntax: "k:<key>"
+                        boolean keyStored = false;
                         if (((key == null || key.equals("")) && param.length() == 32) && secured)
-                            handler.storeKey(param);
+                            keyStored = handler.storeKey(param);
+                        if(!keyStored) System.out.println("Das hat nicht geklappt! :(");
                             key = handler.key;
                         break;
 
@@ -269,6 +269,7 @@ class TCPServer {
                     case 'r': //reset
                         // Command syntax: "r:(<hash>);<nonce>"
                         boolean isReset = handler.reset(param);
+                        if(!isReset) System.out.println("Das hat wohl nicht geklappt! :(");
                         key = handler.key;
                         oriHash = handler.oriHash;
                         break;

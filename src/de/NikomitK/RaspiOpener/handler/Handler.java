@@ -2,8 +2,6 @@ package de.NikomitK.RaspiOpener.handler;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.Date;
 import java.util.List;
 import java.text.DateFormat;
@@ -13,7 +11,7 @@ public class Handler {
     public String key;
     public String oriHash;
     public List<String> otps;
-    private DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    private final DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     public Handler(String pKey, String pHash, List<String> pOtps){
         this.key = pKey;
@@ -108,7 +106,6 @@ public class Handler {
 
     public boolean einmalOeffnung(String pMsg) throws InterruptedException, IOException {
         boolean first = false;
-        int otpPos = -1;
         String openTime = null;
         String trOtp = null;
         for (int i = 0; i < pMsg.length(); i++) {
@@ -119,7 +116,7 @@ public class Handler {
             }
         }
         for (int i = 0; i<otps.size(); i++) {
-            if(otps.get(i) == trOtp){
+            if(otps.get(i).equals(trOtp)){
                 System.out.println("Door is being opened with OTP...");
                 GpioController.activate(Integer.parseInt(openTime));
                 Printer.printToFile(dateF.format(new Date()) + ": Door is being opened by OTP", "log.txt", true);
@@ -188,7 +185,7 @@ public class Handler {
                 enMsg = pMsg.substring(0, i);
             }
         }
-        deMsg = Decryption.decrypt(key, nonce, deMsg);
+        deMsg = Decryption.decrypt(key, nonce, enMsg);
         for (int i = 0; i < deMsg.length(); i++) {
             if (deMsg.charAt(i) == ';') {
                 posHash = i;
