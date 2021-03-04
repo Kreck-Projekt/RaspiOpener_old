@@ -104,8 +104,40 @@ public class Handler {
         return true;
     }
 
-    public boolean einmalOeffnung(String pMsg){
-
+    public boolean einmalOeffnung(String pMsg) throws InterruptedException, IOException {
+        boolean first = false;
+        int otpPos = -1;
+        String openTime = null;
+        String trOtp = null;
+        for (int i = 0; i < pMsg.length(); i++) {
+            if (!first && pMsg.charAt(i) == ';') first = true;
+            else if (first && pMsg.charAt(i) == ';') {
+                openTime = pMsg.substring(i + 1);
+                trOtp = pMsg.substring(0, i);
+            }
+        }
+        for (int i = 0; i<otps.size(); i++) {
+            if(otps.get(i) == trOtp){
+                System.out.println("Door is being opened with OTP...");
+                GpioController.activate(Integer.parseInt(openTime));
+                Printer.printToFile(dateF.format(new Date()) + ": Door is being opened by OTP", "log.txt", true);
+                otps.remove(i);
+                try {
+                    BashIn.exec("sudo rm otpStore.txt");
+                    BashIn.exec("sudo touch otpStore.txt");
+                    for (int j = 0; j < otps.size(); j++) {
+                        Printer.printToFile(otps.get(j), "otpStore.txt", true);
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+            else{
+                System.out.println("Client used a wrong OTP");
+                Printer.printToFile(dateF.format(new Date()) + ": A wrong OTP has been used", "log.txt", true);
+            }
+        }
         return true;
     }
 

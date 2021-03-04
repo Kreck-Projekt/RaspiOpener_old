@@ -14,10 +14,10 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         try{
-            Scanner sc = new Scanner(new File("storage.txt"));
+            Scanner sc = new Scanner(new File("keyPasStore.txt"));
         }
         catch (FileNotFoundException e){
-            BashIn.exec("sudo touch storage.txt");
+            BashIn.exec("sudo touch keyPasStore.txt");
         }
         try{
             Scanner sc = new Scanner(new File("otpStore.txt"));

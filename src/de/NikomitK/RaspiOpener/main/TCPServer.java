@@ -21,7 +21,7 @@ class TCPServer {
     private static Handler handler;
 
     public static void run() throws Exception {
-        File keyPasStore = new File("storage.txt");
+        File keyPasStore = new File("keyPasStore.txt");
         File otpStore = new File("otpStore.txt");
         DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Scanner kpsc = new Scanner(keyPasStore);
@@ -116,6 +116,10 @@ class TCPServer {
 
                     case 'p': //storePW done
                         // Command syntax: "p:(<hash>);<nonce>"
+                        boolean pwStored = handler.storePW(param);
+                        if(!pwStored) System.out.println("Das hat nicht geklappt! :(");
+                        oriHash = handler.oriHash;
+                        break;
 //                        for (int i = 0; i < param.length(); i++) {
 //                            if (param.charAt(i) == ';') {
 //                                nonce = param.substring(i + 1);
@@ -123,15 +127,14 @@ class TCPServer {
 //                            }
 //                        }
 //                        oriHash = Decryption.decrypt(key, nonce, param);
-//                        Printer.printToFile(oriHash, "storage.txt", true);
+//                        Printer.printToFile(oriHash, "keyPasStore.txt", true);
 //                        Printer.printToFile(dateF.format(new Date()) + ": The password hash was set to: " + oriHash, "log.txt", true);
-                        boolean pwStored = handler.storePW(param);
-                        if(!pwStored) System.out.println("Das hat nicht geklappt! :(");
-                        oriHash = handler.oriHash;
-                        break;
 
                     case 'c': //changePW done
                         // Command syntax: "c:(<oldHash>;<newHash>);<nonce>"
+                        boolean changed = handler.changePW(param);
+                        if(!changed) System.out.println("Das hat nicht geklappt! :(");
+                        break;
 //                        String nHash = null;
 //                        String hashes = null;
 //                        for (int i = 0; i < param.length(); i++) {
@@ -150,17 +153,15 @@ class TCPServer {
 //                        }
 //                        if (hashCheck(tHash)) {
 //                            oriHash = nHash;
-//                            Printer.printToFile(key + "\n" + nHash, "storage.txt", false);
+//                            Printer.printToFile(key + "\n" + nHash, "keyPasStore.txt", false);
 //                            Printer.printToFile(dateF.format(new Date()) + ": Password hash was changed to: " + nHash, "log.txt", true);
 //                        }
-                        boolean changed = handler.changePW(param);
-                        if(!changed) System.out.println("Das hat nicht geklappt! :(");
-                        break;
 
                     case 's': // setOTP done
                         // Command syntax "s:(<otp>;<hash>);nonce"
                         boolean otpSet = handler.setOTP(param);
                         if(!otpSet) System.out.println("Das hat nicht geklappt! :(");
+                        otps = handler.otps;
                         break;
 //                        for (int i = 0; i < param.length(); i++) {
 //                            if (!first && param.charAt(i) == ';') first = true;
@@ -187,40 +188,43 @@ class TCPServer {
 //                            e.printStackTrace();
 //                        }
 
-                    case 'e': // einmalöffnung in Progress
+                    case 'e': // einmalöffnung done
                         // Command syntax: "e:<otp>;<time>"
-                        String openTime = null;
-                        for (int i = 0; i < param.length(); i++) {
-                            if (!first && param.charAt(i) == ';') first = true;
-                            else if (first && param.charAt(i) == ';') {
-                                openTime = param.substring(i + 1);
-                                param = param.substring(0, i);
-                            }
-                        }
-                        int remPos;
-                        for (int i = 0; i<otps.size(); i++) {
-                            if(otps.get(i) == param){
-                                System.out.println("Door is being opened by OTP...");
-                                GpioController.activate(Integer.parseInt(openTime));
-                                Printer.printToFile(dateF.format(new Date()) + ": Door is being opened by OTP", "log.txt", true);
-                                otps.remove(i);
-                                try {
-                                    BashIn.exec("sudo rm otpStore.txt");
-                                    BashIn.exec("sudo touch otpStore.txt");
-                                    for (int j = 0; j < otps.size(); j++) {
-                                        Printer.printToFile(otps.get(j), "otpStore.txt", true);
-                                    }
-                                }
-                                catch (Exception e){
-                                    e.printStackTrace();
-                                }
-                            }
-                            else{
-                                System.out.println("Client used a wrong OTP");
-                                Printer.printToFile(dateF.format(new Date()) + ": A wrong OTP has been used", "log.txt", true);
-                            }
-                        }
+                        boolean onetimeOpened = handler.einmalOeffnung(param);
+                        if(!onetimeOpened) System.out.println("Das hat nicht geklappt! :(");
+                        otps = handler.otps;
                         break;
+//                        String openTime = null;
+//                        for (int i = 0; i < param.length(); i++) {
+//                            if (!first && param.charAt(i) == ';') first = true;
+//                            else if (first && param.charAt(i) == ';') {
+//                                openTime = param.substring(i + 1);
+//                                param = param.substring(0, i);
+//                            }
+//                        }
+//                        int remPos;
+//                        for (int i = 0; i<otps.size(); i++) {
+//                            if(otps.get(i) == param){
+//                                System.out.println("Door is being opened by OTP...");
+//                                GpioController.activate(Integer.parseInt(openTime));
+//                                Printer.printToFile(dateF.format(new Date()) + ": Door is being opened with OTP", "log.txt", true);
+//                                otps.remove(i);
+//                                try {
+//                                    BashIn.exec("sudo rm otpStore.txt");
+//                                    BashIn.exec("sudo touch otpStore.txt");
+//                                    for (int j = 0; j < otps.size(); j++) {
+//                                        Printer.printToFile(otps.get(j), "otpStore.txt", true);
+//                                    }
+//                                }
+//                                catch (Exception e){
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                            else{
+//                                System.out.println("Client used a wrong OTP");
+//                                Printer.printToFile(dateF.format(new Date()) + ": A wrong OTP has been used", "log.txt", true);
+//                            }
+//                        }
 
                     case 'a': // a für "password action" aka halts maul justin und formulier gescheit was du sagen willst du keks
                         System.out.println("PaSsWoRd AcTiOn"); // this case is irrelevant
@@ -280,8 +284,8 @@ class TCPServer {
                         if (hashCheck(dcrHsh.substring(0, posPas))) {
                             System.out.println("Door is being opened...\n");
                             Printer.printToFile(dateF.format(new Date()) + ": The Pi was reset from IP address: " + connected.getInetAddress(), "log.txt", true);
-                            BashIn.exec("sudo rm storage.txt");
-                            BashIn.exec("sudo touch storage.txt");
+                            BashIn.exec("sudo rm keyPasStore.txt");
+                            BashIn.exec("sudo touch keyPasStore.txt");
                         } else {
                             System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
                             Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", "log.txt", true);
