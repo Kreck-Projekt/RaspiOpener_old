@@ -124,9 +124,8 @@ public class Handler {
                 try {
                     BashIn.exec("sudo rm otpStore.txt");
                     BashIn.exec("sudo touch otpStore.txt");
-                    for (int j = 0; j < otps.size(); j++) {
-                        Printer.printToFile(otps.get(j), "otpStore.txt", true);
-                    }
+                    for (String otp : otps) Printer.printToFile(otp, "otpStore.txt", true);
+
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -144,7 +143,7 @@ public class Handler {
         int posHash = -1;
         String nonce = null;
         String enMsg = null;
-        String deMsg = null;
+        String deMsg;
         for (int i = 0; i < pMsg.length(); i++) {
             if ( pMsg.charAt(i) == ';') {
                 nonce = pMsg.substring(i + 1);
@@ -171,10 +170,9 @@ public class Handler {
     }
 
     public boolean reset(String pMsg) throws Exception {
-        int posHash = -1;
         String nonce = null;
         String enMsg = null;
-        String deMsg = null;
+        String deMsg;
         for (int i = 0; i < pMsg.length(); i++) {
             if (pMsg.charAt(i) == ';') {
                 nonce = pMsg.substring(i + 1);
