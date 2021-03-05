@@ -22,8 +22,22 @@ class TCPServer {
         File keyPasStore = new File("keyPasStore.txt");
         File otpStore = new File("otpStore.txt");
         DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Scanner kpsc = new Scanner(keyPasStore);
-        Scanner otpscan = new Scanner(otpStore);
+        Scanner kpsc;
+        Scanner otpscan;
+        try {
+            kpsc = new Scanner(keyPasStore);
+        }
+        catch (Exception e){
+            BashIn.exec("sudo touch keyPasStore.txt");
+            kpsc = new Scanner(keyPasStore);
+        }
+        try{
+            otpscan = new Scanner(otpStore);
+        }
+        catch (Exception e){
+            BashIn.exec("sudo touch otpStore.txt");
+            otpscan = new Scanner(otpStore);
+        }
         try{
             key = kpsc.nextLine();
             oriHash = kpsc.nextLine();
@@ -158,7 +172,7 @@ class TCPServer {
 //                        }
 
                     case 's': // setOTP done
-                        // Command syntax "s:(<otp>;<hash>);nonce"
+                        // Command syntax "s:(<otp>;<hash>);<nonce>>"
                         boolean otpSet = handler.setOTP(param);
                         if(!otpSet) System.out.println("Das hat nicht geklappt! :(");
                         otps = handler.otps;
@@ -304,7 +318,6 @@ class TCPServer {
                     case 'H': // "how are you", get's called from alivekeeper, never from user lmao
                         toClient.println("I'm fine, thanks");
                         break;
-
 
                     default:
                         //also irrelevant

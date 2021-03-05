@@ -21,7 +21,7 @@ public class Handler {
 
     public boolean storeKey(String pMsg) throws IOException {
         key = pMsg;
-        Printer.printToFile(key, "storage.txt", false);
+        Printer.printToFile(key, "keyPasStore.txt", false);
         Printer.printToFile(dateF.format(new Date()) + ": Key set to: " + key, "log.txt", true);
         return true;
     }
@@ -36,7 +36,7 @@ public class Handler {
             }
         }
         oriHash = Decryption.decrypt(key, nonce, enHash);
-        Printer.printToFile(oriHash, "storage.txt", true);
+        Printer.printToFile(oriHash, "keyPasStore.txt", true);
         Printer.printToFile(dateF.format(new Date()) + ": The password hash was set to: " + oriHash, "log.txt", true);
         return true;
     }
@@ -61,14 +61,13 @@ public class Handler {
         }
         if(trHash.equals(oriHash)) {
             oriHash = neHash;
-            Printer.printToFile(key + "\n" + neHash, "storage.txt", false);
+            Printer.printToFile(key + "\n" + neHash, "keyPasStore.txt", false);
             Printer.printToFile(dateF.format(new Date()) + ": Password hash was changed to: " + neHash, "log.txt", true);
         }
         return true;
     }
 
     public boolean setOTP(String pMsg) throws Exception {
-        boolean firstSem = false;
         int posOtp = -1;
         String nonce = null;
         String enMsg = null;
@@ -76,8 +75,7 @@ public class Handler {
         String neOtp;
         String trHash;
         for (int i = 0; i < pMsg.length(); i++) {
-            if (!firstSem && pMsg.charAt(i) == ';') firstSem = true;
-            else if (firstSem && pMsg.charAt(i) == ';') {
+            if (pMsg.charAt(i) == ';') {
                 nonce = pMsg.substring(i + 1);
                 enMsg = pMsg.substring(0, i);
             }
@@ -89,14 +87,18 @@ public class Handler {
                 break;
             }
         }
-        neOtp = deMsg.substring(0, posOtp-1);
-        trHash = deMsg.substring(posOtp);
+        neOtp = deMsg.substring(posOtp+1);
+        trHash = deMsg.substring(0, posOtp);
         if(oriHash.equals(trHash)) {
             try {
                 Printer.printToFile(neOtp + "\n", "otpStore.txt", true);
                 otps.add(neOtp);
+                Printer.printToFile(dateF.format(new Date()) + ": A new OTP was set", "log.txt", true);
             } catch (FileNotFoundException fnfe) {
                 BashIn.exec("sudo touch otpStore.txt");
+                Printer.printToFile(neOtp + "\n", "otpStore.txt", true);
+                otps.add(neOtp);
+                Printer.printToFile(dateF.format(new Date()) + ": A new OTP was set", "log.txt", true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -105,12 +107,10 @@ public class Handler {
     }
 
     public boolean einmalOeffnung(String pMsg) throws InterruptedException, IOException {
-        boolean first = false;
         String openTime = null;
         String trOtp = null;
         for (int i = 0; i < pMsg.length(); i++) {
-            if (!first && pMsg.charAt(i) == ';') first = true;
-            else if (first && pMsg.charAt(i) == ';') {
+            if (pMsg.charAt(i) == ';') {
                 openTime = pMsg.substring(i + 1);
                 trOtp = pMsg.substring(0, i);
             }
@@ -141,14 +141,12 @@ public class Handler {
     }
 
     public boolean open(String pMsg) throws Exception {
-        boolean first = false;
         int posHash = -1;
         String nonce = null;
         String enMsg = null;
         String deMsg = null;
         for (int i = 0; i < pMsg.length(); i++) {
-            if (!first && pMsg.charAt(i) == ';') first = true;
-            else if (first && pMsg.charAt(i) == ';') {
+            if ( pMsg.charAt(i) == ';') {
                 nonce = pMsg.substring(i + 1);
                 enMsg = pMsg.substring(0, i);
             }
@@ -173,26 +171,18 @@ public class Handler {
     }
 
     public boolean reset(String pMsg) throws Exception {
-        boolean first = false;
         int posHash = -1;
         String nonce = null;
         String enMsg = null;
         String deMsg = null;
         for (int i = 0; i < pMsg.length(); i++) {
-            if (!first && pMsg.charAt(i) == ';') first = true;
-            else if (first && pMsg.charAt(i) == ';') {
+            if (pMsg.charAt(i) == ';') {
                 nonce = pMsg.substring(i + 1);
                 enMsg = pMsg.substring(0, i);
             }
         }
         deMsg = Decryption.decrypt(key, nonce, enMsg);
-        for (int i = 0; i < deMsg.length(); i++) {
-            if (deMsg.charAt(i) == ';') {
-                posHash = i;
-                break;
-            }
-        }
-        if (oriHash.equals(deMsg.substring(0, posHash))) {
+        if (oriHash.equals(deMsg)) {
             System.out.println("Pi is getting reset...\n");
             Printer.printToFile("\n\n\n" + dateF.format(new Date()) + ": The Pi was reset", "log.txt", true);
             key = "";

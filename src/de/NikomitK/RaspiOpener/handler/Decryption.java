@@ -39,7 +39,6 @@ public class Decryption {
         cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(TAG_LENGTH_BIT, byteNonce));
         byte[] plainText = cipher.doFinal(encryptedText);
         String decryptedText = new String(plainText, UTF_8);
-        System.out.println(decryptedText);
 
         return decryptedText;
     }
