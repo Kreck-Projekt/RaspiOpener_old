@@ -6,10 +6,10 @@ The App to use with it is "DoorOpenerApp"
 
 # Command syntax:
 
-Store Key: k:<key>
-Store Password: p:(<hash>);<nonce>
-Change Password: c:(<oldHash>;<newHash>);<nonce>
-Set new OTP: "s:(<otp>;<hash>);<nonce>
-Use OTP: e:<otp>;<time>
-Open: o:(<hash>;<time>);<nonce>
-reset: r:(<hash>);<nonce>
+Store Key: k:'key' <br/>
+Store Password: p:('hash');'nonce' <br/>
+Change Password: c:('oldHash';'newHash');'nonce' <br/>
+Set new OTP: "s:('otp';'hash');'nonce' <br/>
+Use OTP: e:'otp';'time' <br/>
+Open: o:('hash';'time');'nonce' <br/>
+Reset: r:('hash');'nonce' <br/>
