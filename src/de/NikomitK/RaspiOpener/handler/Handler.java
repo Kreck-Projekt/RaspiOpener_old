@@ -91,12 +91,12 @@ public class Handler {
         trHash = deMsg.substring(0, posOtp);
         if(oriHash.equals(trHash)) {
             try {
-                Printer.printToFile(neOtp + "\n", "otpStore.txt", true);
+                Printer.printToFile(neOtp, "otpStore.txt", true);
                 otps.add(neOtp);
                 Printer.printToFile(dateF.format(new Date()) + ": A new OTP was set", "log.txt", true);
             } catch (FileNotFoundException fnfe) {
                 BashIn.exec("sudo touch otpStore.txt");
-                Printer.printToFile(neOtp + "\n", "otpStore.txt", true);
+                Printer.printToFile(neOtp, "otpStore.txt", true);
                 otps.add(neOtp);
                 Printer.printToFile(dateF.format(new Date()) + ": A new OTP was set", "log.txt", true);
             } catch (Exception e) {
@@ -115,26 +115,32 @@ public class Handler {
                 trOtp = pMsg.substring(0, i);
             }
         }
-        for (int i = 0; i<otps.size(); i++) {
-            if(otps.get(i).equals(trOtp)){
-                System.out.println("Door is being opened with OTP...");
-                GpioController.activate(Integer.parseInt(openTime));
-                Printer.printToFile(dateF.format(new Date()) + ": Door is being opened by OTP", "log.txt", true);
-                otps.remove(i);
-                try {
-                    BashIn.exec("sudo rm otpStore.txt");
-                    BashIn.exec("sudo touch otpStore.txt");
-                    for (String otp : otps) Printer.printToFile(otp, "otpStore.txt", true);
 
-                }
-                catch (Exception e){
-                    e.printStackTrace();
+        if(otps.size()>0){
+            for (int i = 0; i < otps.size(); i++) {
+                if (otps.get(i).equals(trOtp)) {
+                    System.out.println("Door is being opened with OTP...");
+                    GpioController.activate(Integer.parseInt(openTime));
+                    Printer.printToFile(dateF.format(new Date()) + ": Door is being opened by OTP", "log.txt", true);
+                    otps.remove(i);
+                    try {
+                        BashIn.exec("sudo rm otpStore.txt");
+                        BashIn.exec("sudo touch otpStore.txt");
+                        for (String otp : otps) Printer.printToFile(otp, "otpStore.txt", true);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    System.out.println("Client used a wrong OTP");
+                    Printer.printToFile(dateF.format(new Date()) + ": A wrong OTP has been used", "log.txt", true);
                 }
             }
-            else{
-                System.out.println("Client used a wrong OTP");
-                Printer.printToFile(dateF.format(new Date()) + ": A wrong OTP has been used", "log.txt", true);
-            }
+
+        }
+        else{
+            System.out.println("There are currently no OTPs stored");
+            Printer.printToFile(dateF.format(new Date()) + ": There were no OTPs, but it was tried anyway", "log.txt", true);
         }
         return true;
     }

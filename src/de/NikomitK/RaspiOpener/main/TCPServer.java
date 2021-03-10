@@ -86,7 +86,7 @@ class TCPServer {
                 toClient.println("Connected");
                 // receive from app
                 fromclient = fromClient.readLine();
-                System.out.println("Recieved: " + fromclient);
+                System.out.println("Received: " + fromclient);
                 try {
                     if (fromclient.charAt(1) != ':' && fromclient.equals("null")) {
                         try {
