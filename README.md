@@ -41,7 +41,7 @@ The App to use with it is "DoorOpenerApp"
   ```  
   To exit hit Ctrl + A and then d
 
-- now install the app and go through the init process in the app. (App installation currently not possible)
+- <p>now install the app and go through the init process in the app.(only android) <br>Download Link: https://github.com/Kreck-Projekt/DoorOpenerApp/releases/download/v1.0/door-opener-release.apk </p>
 - If the initializing was succesful you should now open port 5000 in your network.
 - After that change the IP-Addres in the app
   You can look up your public ip here:
