@@ -5,7 +5,7 @@ You need to connect a raspberry pi (zero?) with a relay to the normal button tha
 The App to use with it is "DoorOpenerApp"
 
 # Installation Guide:
- install "RaspiOpener"  "sudo java -jar AliveKeeper.jar" in new screen
+ Install "RaspiOpener"  "sudo java -jar AliveKeeper.jar" in new screen
 
 - flash sd card with RaspberryOS Lite (https://www.raspberrypi.org/software/operating-systems/)
 - copy your wpa-supplicant.conf and the ssh file on the boot partition
@@ -20,7 +20,7 @@ The App to use with it is "DoorOpenerApp"
   psk="Password"
   }
   ```
-- install all required:
+- install all required packages:
   ```sh
   sudo apt-get install openjdk-8-jdk -y & sudo apt-get install wiringpi -y & sudo apt-get install screen -y & sudo apt-get install git -y
   ```
