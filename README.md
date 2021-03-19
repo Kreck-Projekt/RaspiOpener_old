@@ -41,7 +41,7 @@ The App to use with it is "DoorOpenerApp"
   ```  
   To exit hit Ctrl + A and then d
 
-- now go through the init process in the app.
+- now install the app and go through the init process in the app. (App installation currently not possible)
 - If the initializing was succesful you should now open port 5000 in your network.
 - After that change the IP-Addres in the app
   You can look up your public ip here:
