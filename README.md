@@ -52,8 +52,8 @@ The App to use with it is "DoorOpenerApp"
   
   !Warning! After the reboot you must redo the last step 
 
-
-# Command syntax:
+# Developer Notes:
+### Command syntax:
 
 Store Key: k:'key' <br/>
 Store Password: p:('hash');'nonce' <br/>
