@@ -168,7 +168,7 @@ public class Handler {
             GpioController.activate(Integer.parseInt(deMsg.substring(posHash + 1)));
             Printer.printToFile(dateF.format(new Date()) + ": Door is being opened", "log.txt", true);
         } else {
-            System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
+            System.out.println("a wrong password was used");
             Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", "log.txt", true);
             //toClient.println("Wrong password"); I think this is useless cause the app doesn't receive anything
         }
@@ -196,7 +196,7 @@ public class Handler {
             BashIn.exec("sudo rm otpStore.txt");
             BashIn.exec("sudo touch otpStore.txt");
         } else {
-            System.out.println("ding dong, your password is wrong\n¯\\_(ツ)_/¯");
+            System.out.println("a wrrong password was used");
             Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", "log.txt", true);
         }
         return true;
