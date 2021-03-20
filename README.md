@@ -24,21 +24,24 @@ The App to use with it is "DoorOpenerApp"
   ```sh
   sudo apt-get install openjdk-8-jdk -y & sudo apt-get install wiringpi -y & sudo apt-get install screen -y & sudo apt-get install git -y
   ```
-- install the two programms
+- download the installer
   ```sh
-  git clone https://github.com/Kreck-Projekt/AliveKeeper.git 
-  git clone https://github.com/Kreck-Projekt/RaspiOpener.git
+  wget https://github.com/Kreck-Projekt/PiInstaller/releases/download/V1.0/installer.sh
   ```   
-- make the installed files executable
+
+- making the installer executable
   ```sh
-  sudo chmod -755 AliveKeeper.jar
-  sudo chmod -755 RaspiOpener.jar
-  ```  
+  chmod +x installer.sh
+  ```
+- run the installer  
+  ```sh
+  ./installer.sh
+  ```
 - create a new screen and execute the AliveKeeper.jar
   ```sh
   screen -S RaspiOpener
   sudo java -jar AliveKeeper.jar
-  ```  
+  ```
   To exit hit Ctrl + A and then d
 
 - <p>now install the app and go through the init process in the app.(only android) <br>Download Link: https://github.com/Kreck-Projekt/DoorOpenerApp/releases/download/v1.0/door-opener-release.apk </p>
