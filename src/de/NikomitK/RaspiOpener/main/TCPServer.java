@@ -1,6 +1,8 @@
 package de.NikomitK.RaspiOpener.main;
 
 import de.NikomitK.RaspiOpener.handler.*;
+
+import javax.crypto.AEADBadTagException;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -116,7 +118,7 @@ class TCPServer {
                     break;
                 }
 
-                boolean worked = false;
+                String worked = null;
                 try {
                     switch (fromclient.charAt(0)) {
                         case 'n': //irrelevant
@@ -124,7 +126,6 @@ class TCPServer {
 
                         case 'k': //storeKey done
                             // Command syntax: "k:<key>"
-                            worked = false;
                             if (((key == null || key.equals("")) && param.length() == 32) && secured)
                                 worked = handler.storeKey(param);
                             key = handler.key;
@@ -161,7 +162,6 @@ class TCPServer {
                         case 'r': //reset
                             // Command syntax: "r:(<hash>);<nonce>"
                             worked = handler.reset(param);
-                            if (!worked) System.out.println("Das hat wohl nicht geklappt! :(");
                             key = handler.key;
                             oriHash = handler.oriHash;
                             break;
@@ -175,17 +175,24 @@ class TCPServer {
                             System.out.println("What happened here?");
                             Printer.printToFile(dateF.format(new Date()) + ": This wasn't supposed to happen :/", "log.txt", true);
                             Printer.printToFile(dateF.format(new Date()) + ": The whole message was: " + fromclient, "log.txt", true);
+                            toClient.println("10");
                             toClient.println("What do you want from this poor Server? \uD83E\uDD7A");
                             break;
                     }
                 }
+                catch(AEADBadTagException bte){
+                    bte.printStackTrace();
+                    worked = "03";
+                }
                 catch (Exception exc){
                     exc.printStackTrace();
-                    worked = false;
+                    worked = null;
                 }
 
-                toClient.println(worked + "EOS");
-                connected.close();
+                if(worked != null) {
+                    toClient.println(worked + "EOS");
+                    connected.close();
+                }
             }
 
 
