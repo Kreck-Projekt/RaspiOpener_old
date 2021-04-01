@@ -19,7 +19,7 @@ class TCPServer {
     static String oriHash = "";  //original hash, just saved here for testing purposes
     static List<String> otps;
 
-    public static void run() throws Exception {
+    public static void run(String logfileName, boolean debug) throws Exception {
         File keyPasStore = new File("keyPasStore.txt");
         File otpStore = new File("otpStore.txt");
         DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -58,7 +58,7 @@ class TCPServer {
             }
 
         }
-        Handler handler = new Handler(key, oriHash, otps);
+        Handler handler = new Handler(key, oriHash, otps, logfileName, debug);
         handler.key = key;
         handler.oriHash = oriHash;
 
@@ -70,7 +70,7 @@ class TCPServer {
         ServerSocket Server = new ServerSocket(5000);
 
         System.out.println("TCPServer waiting for client on port 5000 ");
-        Printer.printToFile(dateF.format(new Date()) + ": Server starts", "log.txt", true);
+        Printer.printToFile(dateF.format(new Date()) + ": Server starts", logfileName, true);
         while (true) {
 
             try{
@@ -108,7 +108,7 @@ class TCPServer {
                     continue;
                 }
                 if (fromclient.charAt(0) != 'H')
-                    Printer.printToFile(dateF.format(new Date()) + ": Client at: " + connected.getInetAddress() + " sent " + fromclient.charAt(0) + " command", "log.txt", true);
+                    Printer.printToFile(dateF.format(new Date()) + ": Client at: " + connected.getInetAddress() + " sent " + fromclient.charAt(0) + " command", logfileName, true);
                 String param;
                 try {
                     param = fromclient.substring(2);
@@ -173,8 +173,8 @@ class TCPServer {
                         default:
                             //also irrelevant
                             System.out.println("What happened here?");
-                            Printer.printToFile(dateF.format(new Date()) + ": This wasn't supposed to happen :/", "log.txt", true);
-                            Printer.printToFile(dateF.format(new Date()) + ": The whole message was: " + fromclient, "log.txt", true);
+                            Printer.printToFile(dateF.format(new Date()) + ": This wasn't supposed to happen :/ ERROR #10", logfileName, true);
+                            Printer.printToFile(dateF.format(new Date()) + ": The whole message was: " + fromclient, logfileName, true);
                             toClient.println("10");
                             toClient.println("What do you want from this poor Server? \uD83E\uDD7A");
                             break;

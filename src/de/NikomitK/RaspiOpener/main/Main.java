@@ -12,8 +12,14 @@ public class Main {
     private static PrintWriter pw = new PrintWriter(sw);
     private static DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     public static void main(String[] args) throws Exception {
-        if(args.length>0 /*&& args[0].equals("-r")*/){
+        String logfileName = "log.txt";
+        boolean debug = false;
+        if(args.length>0 && args[0].equals("-r")){
             BashIn.exec("sudo rm keyPasStore.txt");
+        }
+        else if(args.length>0 && args[0].equals("-debug")) {
+            debug = true;
+            logfileName = "debugLog.txt";
         }
         try{
             Scanner sc = new Scanner(new File("keyPasStore.txt"));
@@ -30,7 +36,7 @@ public class Main {
         try{
             System.out.println("Starting...");
             // TCP Server starten...
-            TCPServer.run();
+            TCPServer.run(logfileName, debug);
         }
         catch(Exception e){
             e.printStackTrace(pw);
