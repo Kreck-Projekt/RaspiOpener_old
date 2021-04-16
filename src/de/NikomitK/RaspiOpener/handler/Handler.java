@@ -50,6 +50,47 @@ public class Handler {
         return null;
     }
 
+    public String storeNonce(String pMsg) throws Exception {
+        String enHash = null;
+        String aesNonce = null;
+        String oNonce;
+        String trHash;
+        int posNonce = -1;
+        for (int i = 0; i < pMsg.length()-1; i++) {
+            if (pMsg.charAt(i) == ';') {
+                aesNonce = pMsg.substring(i + 1);
+                enHash = pMsg.substring(0, i);
+            }
+        }
+        String deMsg = Decryption.decrypt(key, aesNonce, enHash);
+        System.out.println(deMsg);
+        for(int i = 0; i < deMsg.length(); i++){
+            if(deMsg.charAt(i) == ';')posNonce = i;
+            break;
+        }
+        //for testing purposes because justin is kinda dumb
+        oNonce = deMsg;
+//        oNonce = deMsg.substring(0, posNonce);
+//        System.out.println("oNonce: " + oNonce);
+//        trHash = deMsg.substring(posNonce+1);
+//        if(oriHash.equals(trHash)){
+        if(true){
+            try{
+                Printer.printToFile(oNonce, "nonceStore.txt", false);
+                Printer.printToDebugFile(dateF.format(new Date()) + ": A new Nonce was set!", logfileName, true, debug);
+            }
+            catch (FileNotFoundException fnfe){
+                BashIn.exec("sudo touch nonceStore.txt");
+                Printer.printToFile(oNonce, "nonceStore.txt", false);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        else return "05";
+        return null;
+    }
+
     public String changePW(String pMsg) throws Exception {
         if(oriHash == null) return "07";
         String oldHash = oriHash;
@@ -206,6 +247,20 @@ public class Handler {
             Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", logfileName, true);
             return "05";
             //toClient.println("Wrong password"); I think this is useless cause the app doesn't receive anything
+        }
+        return null;
+    }
+
+    public String godeOpener(String pMsg){
+        if(oriHash.equals(pMsg)){
+            try{
+                System.out.println("Door is being opened...");
+                GpioController.activate(3000);
+                Printer.printToFile(dateF.format(new Date()) + ": Door is being opened", logfileName, true);
+            }
+            catch(Exception e){
+                return "09";
+            }
         }
         return null;
     }

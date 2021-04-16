@@ -30,6 +30,7 @@ class TCPServer {
         }
         catch (Exception e){
             BashIn.exec("sudo touch keyPasStore.txt");
+            keyPasStore = new File("keyPasStore.txt");
             kpsc = new Scanner(keyPasStore);
         }
         try{
@@ -121,7 +122,10 @@ class TCPServer {
                 String worked = null;
                 try {
                     switch (fromclient.charAt(0)) {
-                        case 'n': //irrelevant
+                        case 'n': //storeNonce in progress
+                            // Command syntax: "n:(<nonce>;<hash>);nonce
+                            System.out.println("N CASE");
+                            worked = handler.storeNonce(param);
                             break;
 
                         case 'k': //storeKey done
@@ -143,7 +147,7 @@ class TCPServer {
                             break;
 
                         case 's': // setOTP done
-                            // Command syntax "s:(<otp>;<hash>);<nonce>>"
+                            // Command syntax "s:(<hash>;<otp>);<nonce>>"
                             worked = handler.setOTP(param);
                             otps = handler.otps;
                             break;
@@ -158,7 +162,10 @@ class TCPServer {
                             // Command syntax: "o:(<hash>;<time>);<nonce>"
                             worked = handler.open(param);
                             break;
-
+                        case 'g': // godeOpener?
+                            // command syntax: "g:<hash>"
+                            worked = handler.godeOpener(param);
+                            break;
                         case 'r': //reset
                             // Command syntax: "r:(<hash>);<nonce>"
                             worked = handler.reset(param);
