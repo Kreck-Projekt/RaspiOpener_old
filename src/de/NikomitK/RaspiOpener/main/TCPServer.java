@@ -20,6 +20,37 @@ class TCPServer {
     static List<String> otps;
 
     public static void run(String logfileName, boolean debug) throws Exception {
+//        idk why but somehow this didn't work so I'm just using the old code again
+//        DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+//
+//        File keyPasStore = new File("keyPasStore.txt");
+//        keyPasStore.createNewFile();
+//        Scanner kpsc = new Scanner(keyPasStore);
+//
+//        File otpStore = new File(File.separator + "otpStore.txt");
+//        otpStore.createNewFile();
+//        Scanner otpscan = new Scanner(otpStore);
+//
+//        try{
+//            key = kpsc.nextLine();
+//            oriHash = kpsc.nextLine();
+//        }
+//        catch(Exception e){
+//            e.printStackTrace();
+//            key = null;
+//            secured = true;
+//        }
+//        otps = new ArrayList<>();
+//        while(true){
+//            try{
+//                otps.add(otpscan.nextLine());
+//            }
+//            catch(Exception e){
+//                e.printStackTrace();
+//                break;
+//            }
+//
+//        }
         File keyPasStore = new File("keyPasStore.txt");
         File otpStore = new File("otpStore.txt");
         DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -31,6 +62,7 @@ class TCPServer {
         catch (Exception e){
             BashIn.exec("sudo touch keyPasStore.txt");
             keyPasStore = new File("keyPasStore.txt");
+            keyPasStore.createNewFile();
             kpsc = new Scanner(keyPasStore);
         }
         try{
@@ -72,6 +104,7 @@ class TCPServer {
 
         System.out.println("TCPServer waiting for client on port 5000 ");
         Printer.printToFile(dateF.format(new Date()) + ": Server starts", logfileName, true);
+        System.out.println("der key ist:" + key);
         while (true) {
 
             try{
@@ -130,13 +163,16 @@ class TCPServer {
 
                         case 'k': //storeKey done
                             // Command syntax: "k:<key>"
+                            System.out.println("Ich bin schon kinda dumm ngl");
                             if (((key == null || key.equals("")) && param.length() == 32) && secured)
                                 worked = handler.storeKey(param);
+                            else System.out.println("Tja, jetzt stehen wir hier");
                             key = handler.key;
                             break;
 
                         case 'p': //storePW done
                             // Command syntax: "p:(<hash>);<nonce>"
+                            if(((oriHash == null || oriHash.equals("")) && secured))
                             worked = handler.storePW(param);
                             oriHash = handler.oriHash;
                             break;

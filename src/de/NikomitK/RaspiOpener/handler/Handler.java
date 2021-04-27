@@ -1,5 +1,6 @@
 package de.NikomitK.RaspiOpener.handler;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Date;
@@ -25,6 +26,7 @@ public class Handler {
 
     public String storeKey(String pMsg) throws IOException {
         key = pMsg;
+        System.out.println("Ich store den key");
         Printer.printToFile(key, "keyPasStore.txt", false);
         Printer.printToFile(dateF.format(new Date()) + ": Key set to: " + key, logfileName, true);
         if(key == null) {
@@ -76,12 +78,9 @@ public class Handler {
 //        if(oriHash.equals(trHash)){
         if(true){
             try{
+                new File("nonceStore.txt");
                 Printer.printToFile(oNonce, "nonceStore.txt", false);
                 Printer.printToDebugFile(dateF.format(new Date()) + ": A new Nonce was set!", logfileName, true, debug);
-            }
-            catch (FileNotFoundException fnfe){
-                BashIn.exec("sudo touch nonceStore.txt");
-                Printer.printToFile(oNonce, "nonceStore.txt", false);
             }
             catch (Exception e){
                 e.printStackTrace();
@@ -252,7 +251,14 @@ public class Handler {
     }
 
     public String godeOpener(String pMsg){
-        if(oriHash.equals(pMsg)){
+        int posSem = 0;
+        for(int i = 0; i<pMsg.length(); i++){
+            if(pMsg.charAt(i) == ';'){
+                posSem = i;
+            }
+        }
+
+        if(oriHash.equals(pMsg.substring(0, posSem-1))){
             try{
                 System.out.println("Door is being opened...");
                 GpioController.activate(3000);
@@ -260,6 +266,13 @@ public class Handler {
             }
             catch(Exception e){
                 return "09";
+            }
+        }
+        else {
+            try{
+                einmalOeffnung(pMsg.substring(posSem));
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return null;
