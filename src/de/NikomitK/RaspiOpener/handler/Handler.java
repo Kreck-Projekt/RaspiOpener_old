@@ -26,7 +26,6 @@ public class Handler {
 
     public String storeKey(String pMsg) throws IOException {
         key = pMsg;
-        System.out.println("Ich store den key");
         Printer.printToFile(key, "keyPasStore.txt", false);
         Printer.printToFile(dateF.format(new Date()) + ": Key set to: " + key, logfileName, true);
         if(key == null) {
@@ -71,6 +70,7 @@ public class Handler {
             break;
         }
         //for testing purposes because justin is kinda dumb
+        // a few weeks later, I have no clue what the hell this was about, but I know it's still not fixed
         oNonce = deMsg;
 //        oNonce = deMsg.substring(0, posNonce);
 //        System.out.println("oNonce: " + oNonce);
@@ -300,7 +300,7 @@ public class Handler {
             BashIn.exec("sudo rm otpStore.txt");
             BashIn.exec("sudo touch otpStore.txt");
         } else {
-            System.out.println("a wrrong password was used");
+            System.out.println("a wrong password was used");
             Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", logfileName, true);
         }
         return null;

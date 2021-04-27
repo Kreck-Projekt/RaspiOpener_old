@@ -20,7 +20,7 @@ class TCPServer {
     static List<String> otps;
 
     public static void run(String logfileName, boolean debug) throws Exception {
-//        idk why but somehow this didn't work so I'm just using the old code again
+//        idk why but somehow this didn't work so I'm just using the old code again until i figure it out
 //        DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 //
 //        File keyPasStore = new File("keyPasStore.txt");
@@ -102,13 +102,13 @@ class TCPServer {
 
         ServerSocket Server = new ServerSocket(5000);
 
-        System.out.println("TCPServer waiting for client on port 5000 ");
+        System.out.println("TCP-Server waiting for client on port 5000 ");
         Printer.printToFile(dateF.format(new Date()) + ": Server starts", logfileName, true);
-        System.out.println("der key ist:" + key);
         while (true) {
 
             try{
                 Socket connected = Server.accept();
+                connected.setSoTimeout(3000);
                 System.out.println("Client at " + " " + connected.getInetAddress() + ":" + connected.getPort() + " connected ");
 
                 BufferedReader fromClient = new BufferedReader(new InputStreamReader(connected.getInputStream()));
@@ -131,7 +131,7 @@ class TCPServer {
                         }
                         connected.close();
                         continue;
-                    } //checks if the sent message is a command#
+                    } //checks if the sent message is a command
                 } catch (Exception e) {
                     try {
                         toClient.println("Invalid connection\n");
@@ -157,16 +157,13 @@ class TCPServer {
                     switch (fromclient.charAt(0)) {
                         case 'n': //storeNonce in progress
                             // Command syntax: "n:(<nonce>;<hash>);nonce
-                            System.out.println("N CASE");
                             worked = handler.storeNonce(param);
                             break;
 
                         case 'k': //storeKey done
                             // Command syntax: "k:<key>"
-                            System.out.println("Ich bin schon kinda dumm ngl");
                             if (((key == null || key.equals("")) && param.length() == 32) && secured)
                                 worked = handler.storeKey(param);
-                            else System.out.println("Tja, jetzt stehen wir hier");
                             key = handler.key;
                             break;
 

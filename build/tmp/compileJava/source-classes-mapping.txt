@@ -6,9 +6,9 @@ de/NikomitK/RaspiOpener/handler/GpioController.java
  de.NikomitK.RaspiOpener.handler.GpioController
 de/NikomitK/RaspiOpener/handler/BashIn.java
  de.NikomitK.RaspiOpener.handler.BashIn
-de/NikomitK/RaspiOpener/main/Main.java
- de.NikomitK.RaspiOpener.main.Main
-de/NikomitK/RaspiOpener/main/TCPServer.java
- de.NikomitK.RaspiOpener.main.TCPServer
 de/NikomitK/RaspiOpener/handler/Handler.java
  de.NikomitK.RaspiOpener.handler.Handler
+de/NikomitK/RaspiOpener/main/TCPServer.java
+ de.NikomitK.RaspiOpener.main.TCPServer
+de/NikomitK/RaspiOpener/main/Main.java
+ de.NikomitK.RaspiOpener.main.Main
