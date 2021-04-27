@@ -269,8 +269,9 @@ public class Handler {
             }
         }
         else {
+            System.out.println(pMsg.substring(posSem+1));
             try{
-                einmalOeffnung(pMsg.substring(posSem));
+                einmalOeffnung(pMsg.substring(posSem+1) + ";3000");
             } catch (Exception e) {
                 e.printStackTrace();
             }
