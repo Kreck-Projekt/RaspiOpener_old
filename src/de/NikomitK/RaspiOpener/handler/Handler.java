@@ -258,7 +258,7 @@ public class Handler {
             }
         }
 
-        if(oriHash.equals(pMsg.substring(0, posSem-1))){
+        if(oriHash.equals(pMsg.substring(0, posSem))){
             try{
                 System.out.println("Door is being opened...");
                 GpioController.activate(3000);
