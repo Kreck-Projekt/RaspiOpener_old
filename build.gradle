@@ -2,11 +2,14 @@ plugins {
     id 'java'
 }
 
-group 'CodeOpener'
-version ''
+group 'de.NikomitK.RaspiOpener.main'
+version '1.0'
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://raw.githubusercontent.com/yoyosource/YAPION/master/releases")
+    }
 }
 
 
@@ -20,9 +23,15 @@ sourceSets {
 
 apply plugin: 'java'
 dependencies {
-    compile 'junit:junit:4.12'
-    compile 'com.pi4j:pi4j-core:1.4'
-    compile 'javax.xml.bind:jaxb-api:2.3.1'
+    testCompile 'junit:junit:4.12'
+
+    compileOnly 'org.projectlombok:lombok:1.18.6'
+    testCompileOnly 'org.projectlombok:lombok:1.18.6'
+    annotationProcessor 'org.projectlombok:lombok:1.18.6'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.6'
+
+    implementation 'com.pi4j:pi4j-core:1.4'
+    implementation 'yoyosource:YAPION:0.25.3'
 }
 jar {
     manifest {

@@ -1,42 +1,26 @@
 package de.NikomitK.RaspiOpener.handler;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import de.NikomitK.RaspiOpener.main.Main;
+import lombok.experimental.UtilityClass;
 
+
+@UtilityClass
 public class Handler {
-    public String key;
-    public String oriHash;
-    public List<String> otps;
-    public String logfileName;
-    public boolean debug;
-    private final DateFormat dateF = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
-    public Handler(String pKey, String pHash, List<String> pOtps, String logfileName, boolean debug){
-        this.key = pKey;
-        this.oriHash = pHash;
-        this.otps = pOtps;
-        this.logfileName = logfileName;
-        this.debug = debug;
-    }
-
-    public String storeKey(String pMsg) throws IOException {
-        key = pMsg;
-        Printer.printToFile(key, "keyPasStore.txt", false);
-        Printer.printToFile(dateF.format(new Date()) + ": Key set to: " + key, logfileName, true);
-        if(key == null) {
-            Printer.printToFile(dateF.format(new Date()) + ": Error #01 while setting key " + key, logfileName, true);
-            return "01";
+    public static Error storeKey(String pMsg){
+        Main.getStorage().setKey(pMsg);
+        Main.getStorage().save();
+        Main.getLogger().log("New key set");
+        Main.getLogger().debug("New key is: " + pMsg);
+        if (Main.getStorage().getKey() == null) {
+            Main.getLogger().warn("Key couldn't get set");
+            return Error.KEY_NOT_SAVED;
         }
-        return null;
+        return Error.OK;
     }
 
-    public String storePW(String pMsg) throws Exception {
-        if(!oriHash.equals("")) return "02";
+    public static Error storePW(String pMsg) throws Exception {
+        if (Main.getStorage().getHash() != null) return Error.PASSWORD_EXISTS;
         String enHash = null;
         String nonce = null;
         for (int i = 0; i < pMsg.length(); i++) {
@@ -45,54 +29,57 @@ public class Handler {
                 enHash = pMsg.substring(0, i);
             }
         }
-        oriHash = Decryption.decrypt(key, nonce, enHash);
-        Printer.printToFile(oriHash, "keyPasStore.txt", true);
-        Printer.printToFile(dateF.format(new Date()) + ": The password hash was set to: " + oriHash, logfileName, true);
-        return null;
+        Main.getStorage().setHash(Decryption.decrypt(Main.getStorage().getKey(), nonce, enHash));
+        Main.getStorage().save();
+        Main.getLogger().log("Password hash changed");
+        Main.getLogger().debug("New password hash is: " + Main.getStorage().getHash());
+        return Error.OK;
     }
 
-    public String storeNonce(String pMsg) throws Exception {
+    public static Error storeNonce(String pMsg) throws Exception {
         String enHash = null;
         String aesNonce = null;
         String oNonce;
-        String trHash;
+        String trHash; // don't remove
         int posNonce = -1;
-        for (int i = 0; i < pMsg.length()-1; i++) {
+        for (int i = 0; i < pMsg.length() - 1; i++) {
             if (pMsg.charAt(i) == ';') {
                 aesNonce = pMsg.substring(i + 1);
                 enHash = pMsg.substring(0, i);
             }
         }
-        String deMsg = Decryption.decrypt(key, aesNonce, enHash);
-        System.out.println(deMsg);
-        for(int i = 0; i < deMsg.length(); i++){
-            if(deMsg.charAt(i) == ';')posNonce = i;
-            break;
+        String deMsg = Decryption.decrypt(Main.getStorage().getKey(), aesNonce, enHash);
+        for (int i = 0; i < deMsg.length(); i++) {
+            if (deMsg.charAt(i) == ';') {
+                posNonce = i;
+                break;
+            }
         }
-        //for testing purposes because justin is kinda dumb
+        // for testing purposes because justin is kinda dumb
         // a few weeks later, I have no clue what the hell this was about, but I know it's still not fixed
+        // a few months later, I think he failed with the command syntax so the code that should work didn't.
+        // fixed in the update that has been ready for months now but still isn't released
         oNonce = deMsg;
 //        oNonce = deMsg.substring(0, posNonce);
 //        System.out.println("oNonce: " + oNonce);
 //        trHash = deMsg.substring(posNonce+1);
 //        if(oriHash.equals(trHash)){
-        if(true){
-            try{
-                new File("nonceStore.txt");
-                Printer.printToFile(oNonce, "nonceStore.txt", false);
-                Printer.printToDebugFile(dateF.format(new Date()) + ": A new Nonce was set!", logfileName, true, debug);
-            }
-            catch (Exception e){
+        if (true) {
+            try {
+                Main.getStorage().setNonce(oNonce);
+                Main.getStorage().save();
+                Main.getLogger().log("A new Nonce was set");
+                Main.getLogger().debug("New nonce is: " + oNonce);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-        else return "05";
-        return null;
+        } else return Error.PASSWORD_MISMATCH;
+        return Error.OK;
     }
 
-    public String changePW(String pMsg) throws Exception {
-        if(oriHash == null) return "07";
-        String oldHash = oriHash;
+    public static Error changePW(String pMsg) throws Exception {
+        if (Main.getStorage().getHash() == null) return Error.NO_PASSWORD_TO_REPLACE;
+        String oldHash = Main.getStorage().getHash();
         String nonce = null;
         String enHashes = null;
         String trHash = null;
@@ -103,25 +90,26 @@ public class Handler {
                 enHashes = pMsg.substring(0, i);
             }
         }
-        String deHashes = Decryption.decrypt(key, nonce, enHashes);
+        String deHashes = Decryption.decrypt(Main.getStorage().getKey(), nonce, enHashes);
         for (int i = 0; i < deHashes.length(); i++) {
             if (deHashes.charAt(i) == ';') {
                 neHash = deHashes.substring(i + 1);
                 trHash = deHashes.substring(0, i);
             }
         }
-        if(trHash.equals(oriHash)) {
-            oriHash = neHash;
-            Printer.printToFile(key + "\n" + neHash, "keyPasStore.txt", false);
-            Printer.printToFile(dateF.format(new Date()) + ": Password hash was changed to: " + neHash, logfileName, true);
-        }
-        else return "05";
-        if(oldHash.equals(oriHash)) return "06";
-        return null;
+        assert trHash != null;
+        if (trHash.equals(Main.getStorage().getHash())) {
+            Main.getStorage().setHash(neHash);
+            Main.getStorage().save();
+            Main.getLogger().log("Password hash was changed");
+            Main.getLogger().debug("New hash is: " + neHash);
+        } else return Error.PASSWORD_MISMATCH;
+        if (oldHash.equals(Main.getStorage().getHash())) return Error.PASSWORD_NOT_SAVED;
+        return Error.OK;
     }
 
-    public String setOTP(String pMsg) throws Exception {
-        int listLength = otps.size();
+    public static Error setOTP(String pMsg) throws Exception {
+        int listLength = Main.getStorage().getOtps().size();
         int posOtp = -1;
         String nonce = null;
         String enMsg = null;
@@ -134,35 +122,30 @@ public class Handler {
                 enMsg = pMsg.substring(0, i);
             }
         }
-        deMsg = Decryption.decrypt(key, nonce, enMsg);
+        deMsg = Decryption.decrypt(Main.getStorage().getKey(), nonce, enMsg);
         for (int i = 0; i < deMsg.length(); i++) {
             if (deMsg.charAt(i) == ';') {
                 posOtp = i;
                 break;
             }
         }
-        neOtp = deMsg.substring(posOtp+1);
+        neOtp = deMsg.substring(posOtp + 1);
         trHash = deMsg.substring(0, posOtp);
-        if(oriHash.equals(trHash)) {
+        if (Main.getStorage().getHash().equals(trHash)) {
             try {
-                Printer.printToFile(neOtp, "otpStore.txt", true);
-                otps.add(neOtp);
-                Printer.printToFile(dateF.format(new Date()) + ": A new OTP was set", logfileName, true);
-            } catch (FileNotFoundException fnfe) {
-                BashIn.exec("sudo touch otpStore.txt");
-                Printer.printToFile(neOtp, "otpStore.txt", true);
-                otps.add(neOtp);
-                Printer.printToFile(dateF.format(new Date()) + ": A new OTP was set", logfileName, true);
+                Main.getStorage().getOtps().add(neOtp);
+                Main.getStorage().save();
+                Main.getLogger().log("A new OTP was added");
+                Main.getLogger().debug("The new OTP is: " + neOtp);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-        else return "05";
-        if(listLength == otps.size()) return "08";
-        return null;
+        } else return Error.PASSWORD_MISMATCH;
+        if (listLength == Main.getStorage().getOtps().size()) return Error.OTP_NOT_SAVED;
+        return Error.OK;
     }
 
-    public String einmalOeffnung(String pMsg) throws InterruptedException, IOException {
+    public static Error einmalOeffnung(String pMsg) throws InterruptedException{
         String openTime = null;
         String trOtp = null;
         for (int i = 0; i < pMsg.length(); i++) {
@@ -172,114 +155,34 @@ public class Handler {
             }
         }
 
-        if(otps.size()>0){
+        if (Main.getStorage().getOtps().size() > 0) {
             boolean isValid = false;
             int position = -1;
-            for (int i = 0; i < otps.size(); i++) {
-                if (otps.get(i).equals(trOtp)) {
+            for (int i = 0; i < Main.getStorage().getOtps().size(); i++) {
+                if (Main.getStorage().getOtps().get(i).equals(trOtp)) {
                     isValid = true;
                     position = i;
                 }
             }
             if (isValid) {
-                System.out.println("Door is being opened with OTP...");
-                GpioController.activate(Integer.parseInt(openTime));
-                Printer.printToFile(dateF.format(new Date()) + ": Door is being opened by OTP", logfileName, true);
-                System.out.println("OTPSTORE LÄNGE " + otps.size());
-                otps.remove(position);
-                System.out.println("OTPSTORE LÄNGE " + otps.size());
-                try {
-                    BashIn.exec("sudo rm otpStore.txt");
-                    BashIn.exec("sudo touch otpStore.txt");
-//                    somehow doesn't print otps into file, try with normal for loop
-//                    for (String otp : otps) {
-//                        Printer.printToFile(otp, "otpStore.txt", true);
-//                        System.out.println(otp);
-//                    }
-                    for(int i = 0; i < otps.size(); i++) {
-                        System.out.println(otps.get(i));
-                        Printer.printToFile(otps.get(i), "otpStore.txt", true);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                GpioHandler.activate(Integer.parseInt(openTime));
+                Main.getLogger().log("Door is being opened by an OTP");
+                Main.getLogger().debug("The used OTP is: " + trOtp);
+                Main.getStorage().getOtps().remove(position);
             } else {
-                System.out.println("Client used a wrong OTP");
-                Printer.printToFile(dateF.format(new Date()) + ": A wrong OTP has been used", logfileName, true);
-                return "04";
+                Main.getLogger().log("A wrong OTP was sent");
+                return Error.OTP_NOT_EXISTING;
             }
 
-        }
-        else{
-            System.out.println("There are currently no OTPs stored");
-            Printer.printToFile(dateF.format(new Date()) + ": There were no OTPs, but it was tried anyway", logfileName, true);
-            return "04";
-        }
-        return null;
-    }
-
-    public String open(String pMsg) throws Exception {
-        int posHash = -1;
-        String nonce = null;
-        String enMsg = null;
-        String deMsg;
-        for (int i = 0; i < pMsg.length(); i++) {
-            if ( pMsg.charAt(i) == ';') {
-                nonce = pMsg.substring(i + 1);
-                enMsg = pMsg.substring(0, i);
-            }
-        }
-        deMsg = Decryption.decrypt(key, nonce, enMsg);
-        for (int i = 0; i < deMsg.length(); i++) {
-            if (deMsg.charAt(i) == ';') {
-                posHash = i;
-                break;
-            }
-        }
-        if (oriHash.equals(deMsg.substring(0, posHash))) {
-            System.out.println("Door is being opened...");
-            GpioController.activate(Integer.parseInt(deMsg.substring(posHash + 1)));
-            Printer.printToFile(dateF.format(new Date()) + ": Door is being opened", logfileName, true);
         } else {
-            System.out.println("a wrong password was used");
-            System.out.println(oriHash + " " + deMsg.substring(0, posHash));
-            Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", logfileName, true);
-            return "05";
-            //toClient.println("Wrong password"); I think this is useless cause the app doesn't receive anything
+            Main.getLogger().log("There are no OTPs stored, but it was tried anyway");
+            return Error.OTP_NOT_EXISTING;
         }
-        return null;
+        return Error.OK;
     }
 
-    public String godeOpener(String pMsg){
-        int posSem = 0;
-        for(int i = 0; i<pMsg.length(); i++){
-            if(pMsg.charAt(i) == ';'){
-                posSem = i;
-            }
-        }
-
-        if(oriHash.equals(pMsg.substring(0, posSem))){
-            try{
-                System.out.println("Door is being opened...");
-                GpioController.activate(3000);
-                Printer.printToFile(dateF.format(new Date()) + ": Door is being opened", logfileName, true);
-            }
-            catch(Exception e){
-                return "09";
-            }
-        }
-        else {
-            System.out.println(pMsg.substring(posSem+1));
-            try{
-                einmalOeffnung(pMsg.substring(posSem+1) + ";3000");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    public String reset(String pMsg) throws Exception {
+    public static Error open(String pMsg) throws Exception {
+        int posHash = -1;
         String nonce = null;
         String enMsg = null;
         String deMsg;
@@ -289,21 +192,66 @@ public class Handler {
                 enMsg = pMsg.substring(0, i);
             }
         }
-        deMsg = Decryption.decrypt(key, nonce, enMsg);
-        if (oriHash.equals(deMsg)) {
-            System.out.println("Pi is getting reset...\n");
-            Printer.printToFile("\n\n\n" + dateF.format(new Date()) + ": The Pi was reset", logfileName, true);
-            key = "";
-            oriHash = "";
-            BashIn.exec("sudo rm keyPasStore.txt");
-            BashIn.exec("sudo touch keyPasStore.txt");
-            BashIn.exec("sudo rm otpStore.txt");
-            BashIn.exec("sudo touch otpStore.txt");
-        } else {
-            System.out.println("a wrong password was used");
-            Printer.printToFile(dateF.format(new Date()) + ": client used a wrong password", logfileName, true);
+        deMsg = Decryption.decrypt(Main.getStorage().getKey(), nonce, enMsg);
+        for (int i = 0; i < deMsg.length(); i++) {
+            if (deMsg.charAt(i) == ';') {
+                posHash = i;
+                break;
+            }
         }
-        return null;
+        if (Main.getStorage().getHash().equals(deMsg.substring(0, posHash))) {
+            GpioHandler.activate(Integer.parseInt(deMsg.substring(posHash + 1)));
+            Main.getLogger().log("Door is being opened...");
+        } else {
+            Main.getLogger().log("A wrong password was used"); // this shouldn't be possible, because the encryption is flawed
+            return Error.PASSWORD_MISMATCH;
+        }
+        return Error.OK;
+    }
+
+    public static Error godeOpener(String pMsg) {
+        int posSem = 0;
+        for (int i = 0; i < pMsg.length(); i++) {
+            if (pMsg.charAt(i) == ';') {
+                posSem = i;
+            }
+        }
+
+        if (Main.getStorage().getHash().equals(pMsg.substring(0, posSem))) {
+            try {
+                GpioHandler.activate(3000);
+                Main.getLogger().log("Door is being opened by keypad");
+            } catch (Exception e) {
+                return Error.INTERNAL_SERVER_ERROR;
+            }
+        } else {
+            try {
+                einmalOeffnung(pMsg.substring(posSem + 1) + ";3000");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return Error.OK;
+    }
+
+    public static Error reset(String pMsg) throws Exception {
+        String nonce = null;
+        String enMsg = null;
+        String deMsg;
+        for (int i = 0; i < pMsg.length(); i++) {
+            if (pMsg.charAt(i) == ';') {
+                nonce = pMsg.substring(i + 1);
+                enMsg = pMsg.substring(0, i);
+            }
+        }
+        deMsg = Decryption.decrypt(Main.getStorage().getKey(), nonce, enMsg);
+        if (Main.getStorage().getHash().equals(deMsg)) {
+            Main.getLogger().log("Pi is getting reset...");
+            Main.resetStorage(true);
+        } else {
+            Main.getLogger().log("Client tried resetting with a wrong password"); // again, this shouldn't happen due to the nature of the encryption
+        }
+        return Error.OK;
     }
 
 }
