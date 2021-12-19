@@ -1,20 +1,16 @@
-de/NikomitK/RaspiOpener/handler/Printer.java
- de.NikomitK.RaspiOpener.handler.Printer
-de/NikomitK/RaspiOpener/handler/Decryption.java
- de.NikomitK.RaspiOpener.handler.Decryption
-de/NikomitK/RaspiOpener/handler/Error.java
- de.NikomitK.RaspiOpener.handler.Error
-de/NikomitK/RaspiOpener/handler/GpioController.java
- de.NikomitK.RaspiOpener.handler.GpioController
-de/NikomitK/RaspiOpener/handler/BashIn.java
- de.NikomitK.RaspiOpener.handler.BashIn
-de/NikomitK/RaspiOpener/handler/Handler.java
- de.NikomitK.RaspiOpener.handler.Handler
 de/NikomitK/RaspiOpener/handler/Storage.java
  de.NikomitK.RaspiOpener.handler.Storage
 de/NikomitK/RaspiOpener/main/TCPServer.java
  de.NikomitK.RaspiOpener.main.TCPServer
+de/NikomitK/RaspiOpener/handler/Handler.java
+ de.NikomitK.RaspiOpener.handler.Handler
 de/NikomitK/RaspiOpener/main/Main.java
  de.NikomitK.RaspiOpener.main.Main
+de/NikomitK/RaspiOpener/handler/Decryption.java
+ de.NikomitK.RaspiOpener.handler.Decryption
+de/NikomitK/RaspiOpener/handler/GpioHandler.java
+ de.NikomitK.RaspiOpener.handler.GpioHandler
+de/NikomitK/RaspiOpener/handler/Error.java
+ de.NikomitK.RaspiOpener.handler.Error
 de/NikomitK/RaspiOpener/handler/Logger.java
  de.NikomitK.RaspiOpener.handler.Logger

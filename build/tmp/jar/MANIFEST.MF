@@ -1,5 +1,4 @@
 Manifest-Version: 1.0
-Class-Path: junit-4.12.jar pi4j-core-1.4.jar jaxb-api-2.3.1.jar hamcrest
- -core-1.3.jar javax.activation-api-1.2.0.jar
+Class-Path: 
 Main-Class: de.NikomitK.RaspiOpener.main.Main
 

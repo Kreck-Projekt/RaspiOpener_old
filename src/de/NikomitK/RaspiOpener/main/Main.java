@@ -29,9 +29,10 @@ public class Main {
     private static File storageFile;
     @Getter
     private static boolean debug = false;
+    public static int openTime = 2000;
 
 
-    // writing this again, because it's trash
+    // writing this again, because it's trash              is this a todo?
     public static void main(String [] args){
         try{
             logger = new Logger(new File("log.txt"));
@@ -52,55 +53,12 @@ public class Main {
             storage = new Storage();
         }
         try{
-            //TCPServer.run();
+            TCPServer.run();
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("Server Crashed.");
         }
     }
-//    public static void main(String[] args) throws Exception {
-//        logger = new Logger(new File("log.txt"));
-//        if (args.length > 0 && args[0].equals("-r")) {
-//            BashIn.exec("sudo rm keyPasStore.txt");
-//            BashIn.exec("sudo rm nonceStore.txt");
-//        } else if (args.length > 0 && args[0].equals("-debug")) {
-//            debug = true;
-//        }
-//        // gets removed in the next update, just here in case the replacement doesn't work reliably C:
-//        // spoiler: it didn't work :C
-//        // this method works with testing if a scanner can be created for these files
-//        // and if not uses a bash command to create them.
-//        // new method will hopefully be implemented in release 2.0
-////        try {
-////            Scanner sc = new Scanner(new File("keyPasStore.txt"));
-////        } catch (FileNotFoundException e) {
-////            BashIn.exec("sudo touch keyPasStore.txt");
-////        }
-////        try {
-////            Scanner sc = new Scanner(new File("otpStore.txt"));
-////        } catch (FileNotFoundException e) {
-////            BashIn.exec("sudo touch otpStore.txt");
-////        }
-////        try {
-////            Scanner sc = new Scanner(new File("nonceStore.txt"));
-////        } catch (FileNotFoundException e) {
-////            BashIn.exec("sudo touch nonceStore.txt");
-////        }
-//        // new File("keyPasStore.txt").createNewFile();
-//        // new File("otpStore.txt").createNewFile();
-//        // new File("nonceStore.txt").createNewFile();
-//        try {
-//            System.out.println("Starting...");
-//            // TCP Server starten...
-//            TCPServer.run(debug);
-//        } catch (Exception e) {
-//            e.printStackTrace(pw);
-//            System.out.println("Closing...?");
-//            //de.NikomitK.RaspiOpener.handler.Printer.printToFile(dateF.format(new Date()) + ": server crashed?" + sw.toString(), new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true))));
-//            Printer.printToFile(dateF.format(new Date()) + ": server crashed? " + sw, "log.txt", true);
-//        }
-//
-//    }
 
     private static void argHandling (String [] args){
 
@@ -112,7 +70,9 @@ public class Main {
         help(arguments.contains("h"));
         debug = arguments.contains("d");
         logger.debug("Debug turnt on");
-        resetStorage(arguments.contains("r"));
+        if(arguments.contains("r")) {
+            resetStorage();
+        }
     }
 
     private static String isArgument(String arg){
@@ -120,6 +80,9 @@ public class Main {
             return arg.substring(1);
         } else if(arg.startsWith("--") && arg.length() > 3){
             return ((Character) arg.charAt(2)).toString();
+        } else if(arg.matches("^[0-9] {3,5}$")){
+            openTime = Integer.parseInt(arg);
+            return null;
         } else {
             return null;
         }
@@ -135,7 +98,7 @@ public class Main {
         }
     }
 
-    public static void resetStorage(boolean reset){
+    public static void resetStorage(){
         storage = new Storage();
         logger.log("Storage was reset");
     }

@@ -219,7 +219,7 @@ public class Handler {
 
         if (Main.getStorage().getHash().equals(pMsg.substring(0, posSem))) {
             try {
-                GpioHandler.activate(3000);
+                GpioHandler.activate(Main.openTime);
                 Main.getLogger().log("Door is being opened by keypad");
             } catch (Exception e) {
                 return Error.INTERNAL_SERVER_ERROR;
@@ -247,7 +247,7 @@ public class Handler {
         deMsg = Decryption.decrypt(Main.getStorage().getKey(), nonce, enMsg);
         if (Main.getStorage().getHash().equals(deMsg)) {
             Main.getLogger().log("Pi is getting reset...");
-            Main.resetStorage(true);
+            Main.resetStorage();
         } else {
             Main.getLogger().log("Client tried resetting with a wrong password"); // again, this shouldn't happen due to the nature of the encryption
         }

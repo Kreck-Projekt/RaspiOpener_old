@@ -132,6 +132,7 @@ class TCPServer {
     }
 
     private static boolean isCommand(String msg) {
+        if(msg == null) return false;
         return msg.charAt(1) == ':' && !msg.equals("null") && msg.length() > 5;
     }
 }
